@@ -46,6 +46,7 @@ func NewRegister(userManager userManager) func(http.ResponseWriter, *http.Reques
 
 		if userID == nil {
 			http.Error(w, "userID is empty", http.StatusBadRequest)
+			return
 		}
 
 		response, err := json.Marshal(RegisterOutput{UserID: *userID})
