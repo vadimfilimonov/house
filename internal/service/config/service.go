@@ -10,6 +10,7 @@ import (
 
 const (
 	defaultServerAddress = "localhost:8080"
+	defaultRedisAddress  = "localhost:6379"
 )
 
 type Config struct {
@@ -17,6 +18,10 @@ type Config struct {
 	ServerAddress string `env:"SERVER_ADDRESS"`
 	// Address of the database connection
 	DatabaseURL string `env:"DATABASE_URL"`
+	// Address of the redis connection
+	RedisAddress string `env:"REDIS_ADDRESS"`
+	// Password of the redis
+	RedisPassword string `env:"REDIS_PASSWORD"`
 	// The secret key for signing the JWT token
 	JwtSecretKey string `env:"JWT_SECRET_KEY"`
 }
@@ -39,6 +44,10 @@ func (c *Config) Parse() error {
 
 	if c.ServerAddress == "" {
 		c.ServerAddress = defaultServerAddress
+	}
+
+	if c.RedisAddress == "" {
+		c.RedisAddress = defaultRedisAddress
 	}
 
 	return nil
