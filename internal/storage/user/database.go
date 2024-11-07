@@ -2,7 +2,9 @@ package storage
 
 import (
 	"context"
+	"crypto/rand"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -11,6 +13,10 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/vadimfilimonov/house/internal/models"
+)
+
+var (
+	ErrUserNotFound = errors.New("user is not found")
 )
 
 type Database struct {
@@ -100,4 +106,16 @@ func runMigrations(db *sql.DB) error {
 	m.Up()
 
 	return nil
+}
+
+func generateUserID() (*string, error) {
+	b := make([]byte, 16)
+
+	_, err := rand.Read(b)
+	if err != nil {
+		return nil, fmt.Errorf("cannot generate userID: %s", err.Error())
+	}
+
+	uuid := fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
+	return &uuid, nil
 }
