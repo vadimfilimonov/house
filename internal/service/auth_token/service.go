@@ -1,7 +1,6 @@
 package auth_token
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -13,20 +12,13 @@ const (
 	claimsKeyUserType = "userType"
 )
 
-type storage interface {
-	Add(ctx context.Context, key string, expiration time.Duration) error
-	Has(ctx context.Context, key string) bool
-}
-
 type Token struct {
 	secretKey string
-	storage   storage
 }
 
-func NewToken(secretKey string, storage storage) *Token {
+func NewToken(secretKey string) *Token {
 	return &Token{
 		secretKey: secretKey,
-		storage:   storage,
 	}
 }
 

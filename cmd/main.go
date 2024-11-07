@@ -31,7 +31,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	tokenManager := auth_token.NewToken(c.JwtSecretKey, tStorage)
+	tokenManager := auth_token.NewToken(c.JwtSecretKey)
 	userManager := user.New(uStorage, tStorage, tokenManager)
 
 	r := chi.NewRouter()
