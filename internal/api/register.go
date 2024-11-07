@@ -16,10 +16,6 @@ type RegisterOutput struct {
 	UserID string `json:"user_id"`
 }
 
-type userManager interface {
-	Register(email, password, userType string) (userID *string, err error)
-}
-
 func NewRegister(userManager userManager) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
