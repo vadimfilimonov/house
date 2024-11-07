@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/vadimfilimonov/house/internal/models"
+	"github.com/vadimfilimonov/house/internal/storage"
 )
 
 type Storage interface {
@@ -13,11 +14,11 @@ type Storage interface {
 }
 
 func GetStorage(storageType, databaseURL string) (Storage, error) {
-	if storageType == StorageTypeMemory {
+	if storageType == storage.StorageTypeMemory {
 		return NewMemory(), nil
 	}
 
-	if storageType == StorageTypeDatabase {
+	if storageType == storage.StorageTypeDatabase {
 		db, err := NewDatabase(databaseURL)
 		if err != nil {
 			return nil, fmt.Errorf("cannot return database storage: %w", err)

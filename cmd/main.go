@@ -11,6 +11,7 @@ import (
 	"github.com/vadimfilimonov/house/internal/service/config"
 	"github.com/vadimfilimonov/house/internal/service/user"
 	"github.com/vadimfilimonov/house/internal/storage"
+	userStorage "github.com/vadimfilimonov/house/internal/storage/user"
 )
 
 func main() {
@@ -20,7 +21,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	st, err := storage.GetStorage(storage.StorageTypeDatabase, c.DatabaseURL)
+	st, err := userStorage.GetStorage(storage.StorageTypeDatabase, c.DatabaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
