@@ -1,19 +1,27 @@
 package auth_token
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	jwt "github.com/golang-jwt/jwt/v5"
 )
 
-type Token struct {
-	secretKey string
+type storage interface {
+	Add(ctx context.Context, key, value string, expiration time.Duration) error
+	Get(ctx context.Context, key string) (string, error)
 }
 
-func NewToken(secretKey string) *Token {
+type Token struct {
+	secretKey string
+	storage   storage
+}
+
+func NewToken(secretKey string, storage storage) *Token {
 	return &Token{
 		secretKey: secretKey,
+		storage:   storage,
 	}
 }
 
@@ -53,6 +61,7 @@ func (t *Token) Decode(tokenString string) (jwt.MapClaims, error) {
 }
 
 // Save saves token to storage
-func (t *Token) Save(tokenString string) error {
-	return nil
+func (t *Token) Save(ctx context.Context, key, tokenString string) error {
+	err := t.storage.Add(ctx, key, tokenString, 24*time.Hour)
+	return err
 }

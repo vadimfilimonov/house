@@ -11,6 +11,7 @@ import (
 	"github.com/vadimfilimonov/house/internal/service/config"
 	"github.com/vadimfilimonov/house/internal/service/user"
 	"github.com/vadimfilimonov/house/internal/storage"
+	tokenStorage "github.com/vadimfilimonov/house/internal/storage/token"
 	userStorage "github.com/vadimfilimonov/house/internal/storage/user"
 )
 
@@ -21,16 +22,21 @@ func main() {
 		log.Fatal(err)
 	}
 
-	st, err := userStorage.GetStorage(storage.StorageTypeDatabase, c.DatabaseURL)
+	uStorage, err := userStorage.GetStorage(storage.StorageTypeDatabase, c.DatabaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	token := auth_token.NewToken(c.JwtSecretKey)
-	userManager := user.New(st)
+	tStorage, err := tokenStorage.GetStorage(storage.StorageTypeDatabase, c.RedisAddress, c.RedisPassword)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	tokenManager := auth_token.NewToken(c.JwtSecretKey, tStorage)
+	userManager := user.New(uStorage)
 
 	r := chi.NewRouter()
-	r.Post("/dummyLogin", api.NewDummyLogin(token))
+	r.Post("/dummyLogin", api.NewDummyLogin(tokenManager))
 	r.Post("/register", api.NewRegister(userManager))
 
 	err = http.ListenAndServe(c.ServerAddress, r)

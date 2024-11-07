@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -41,7 +42,9 @@ func NewDummyLogin(tokenManager *auth_token.Token) func(http.ResponseWriter, *ht
 			return
 		}
 
-		err = tokenManager.Save(*token)
+		ctx := context.Background()
+		// TODO: Настроть права доступа
+		err = tokenManager.Save(ctx, fakeEmail, *token)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
