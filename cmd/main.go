@@ -33,10 +33,11 @@ func main() {
 	}
 
 	tokenManager := auth_token.NewToken(c.JwtSecretKey, tStorage)
-	userManager := user.New(uStorage)
+	userManager := user.New(uStorage, tStorage, tokenManager)
 
 	r := chi.NewRouter()
 	r.Post("/dummyLogin", api.NewDummyLogin(tokenManager))
+	r.Post("/login", api.NewLogin(userManager))
 	r.Post("/register", api.NewRegister(userManager))
 
 	err = http.ListenAndServe(c.ServerAddress, r)
