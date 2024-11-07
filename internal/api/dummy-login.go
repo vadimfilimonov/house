@@ -25,20 +25,20 @@ func NewDummyLogin(tokenManager *auth_token.Token) func(http.ResponseWriter, *ht
 		defer r.Body.Close()
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			BadRequest(&w, err.Error())
 			return
 		}
 
 		var requestBody DummyLoginInput
 		err = json.Unmarshal([]byte(body), &requestBody)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			BadRequest(&w, err.Error())
 			return
 		}
 
 		token, err := tokenManager.Encode(fakeEmail)
 		if err != nil || token == nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			BadRequest(&w, err.Error())
 			return
 		}
 
@@ -46,12 +46,13 @@ func NewDummyLogin(tokenManager *auth_token.Token) func(http.ResponseWriter, *ht
 		// TODO: Настроть права доступа
 		err = tokenManager.Save(ctx, fakeEmail, *token)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			BadRequest(&w, err.Error())
+			return
 		}
 
 		response, err := json.Marshal(DummyLoginOutput{Token: *token})
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			BadRequest(&w, err.Error())
 			return
 		}
 

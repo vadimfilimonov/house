@@ -70,7 +70,7 @@ func (d *Database) Get(id string) (*models.User, error) {
 	query := "SELECT email, password, user_type FROM users WHERE user_id = $1 LIMIT 1"
 	err := d.db.QueryRowContext(ctx, query, id).Scan(&email, &hashedPassword, &userType)
 	if err != nil {
-		return nil, err
+		return nil, ErrUserNotFound
 	}
 
 	return &models.User{

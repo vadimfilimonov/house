@@ -2,10 +2,15 @@ package storage
 
 import (
 	"crypto/rand"
+	"errors"
 	"fmt"
 
 	"github.com/vadimfilimonov/house/internal/models"
 	"github.com/vadimfilimonov/house/internal/storage"
+)
+
+var (
+	ErrUserNotFound = errors.New("user is not found")
 )
 
 type Storage interface {

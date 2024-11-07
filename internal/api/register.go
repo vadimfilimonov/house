@@ -22,7 +22,7 @@ func NewRegister(userManager userManager) func(http.ResponseWriter, *http.Reques
 		defer r.Body.Close()
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			BadRequest(&w, err.Error())
 			return
 		}
 
@@ -30,13 +30,13 @@ func NewRegister(userManager userManager) func(http.ResponseWriter, *http.Reques
 
 		err = json.Unmarshal([]byte(body), &requestBody)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			BadRequest(&w, err.Error())
 			return
 		}
 
 		userID, err := userManager.Register(requestBody.Email, requestBody.Password, requestBody.UserType)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			BadRequest(&w, err.Error())
 			return
 		}
 
@@ -47,7 +47,7 @@ func NewRegister(userManager userManager) func(http.ResponseWriter, *http.Reques
 
 		response, err := json.Marshal(RegisterOutput{UserID: *userID})
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			BadRequest(&w, err.Error())
 			return
 		}
 

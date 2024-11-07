@@ -11,8 +11,8 @@ import (
 	"github.com/vadimfilimonov/house/internal/models"
 )
 
-const (
-	WrongPasswordErr = "password is wrong"
+var (
+	ErrWrongPassword = errors.New("password is wrong")
 )
 
 type userStorage interface {
@@ -69,7 +69,7 @@ func (u *UserManager) Login(ctx context.Context, id, password string) (*string, 
 
 	isPasswordCorrect := verifyPassword(password, user.Password)
 	if !isPasswordCorrect {
-		return nil, errors.New(WrongPasswordErr)
+		return nil, ErrWrongPassword
 	}
 
 	token, err := u.tokenManager.Encode(user.ID)
