@@ -2,8 +2,11 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
+
+	manager "github.com/vadimfilimonov/house/internal/service/user"
 )
 
 type RegisterInput struct {
@@ -36,6 +39,11 @@ func NewRegister(userManager userManager) func(http.ResponseWriter, *http.Reques
 
 		userID, err := userManager.Register(requestBody.Email, requestBody.Password, requestBody.UserType)
 		if err != nil {
+			if errors.Is(err, manager.ErrIncorrectInput) {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+
 			BadRequest(&w, err.Error())
 			return
 		}

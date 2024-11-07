@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"unicode/utf8"
@@ -14,6 +15,8 @@ const (
 const (
 	minPasswordSize = 8
 )
+
+var ErrIncorrectInput = errors.New("incorrect input")
 
 func (u *UserManager) validate(email, password, userType string) error {
 	if err := u.validateUserType(userType); err != nil {
@@ -33,7 +36,7 @@ func (u *UserManager) validate(email, password, userType string) error {
 
 func (u *UserManager) validateUserType(userType string) error {
 	if userType != userTypeClient && userType != userTypeModerator {
-		return fmt.Errorf("incorrect user type: %s", userType)
+		return fmt.Errorf("%s user type is incorrect: %w", userType, ErrIncorrectInput)
 	}
 
 	return nil
@@ -42,7 +45,7 @@ func (u *UserManager) validateUserType(userType string) error {
 func (u *UserManager) validatePassword(password string) error {
 	runeCount := utf8.RuneCountInString(password)
 	if runeCount < minPasswordSize {
-		return fmt.Errorf("password is too short, use min %d symbols", runeCount)
+		return fmt.Errorf("password is too short, use min %d symbols: %w", runeCount, ErrIncorrectInput)
 	}
 
 	return nil
@@ -50,7 +53,7 @@ func (u *UserManager) validatePassword(password string) error {
 
 func (u *UserManager) validateEmail(email string) error {
 	if !u.isValidEmail(email) {
-		return fmt.Errorf("email %s is not valid", email)
+		return fmt.Errorf("email %s is not valid: %w", email, ErrIncorrectInput)
 	}
 
 	return nil
