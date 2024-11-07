@@ -17,7 +17,7 @@ type Database struct {
 	db *sql.DB
 }
 
-func NewDatabase(connectionString string) (*Database, error) {
+func New(connectionString string) (*Database, error) {
 	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		if err := db.Close(); err != nil {

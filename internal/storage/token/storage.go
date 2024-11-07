@@ -15,7 +15,7 @@ type Storage interface {
 
 func GetStorage(storageType, address, password string) (Storage, error) {
 	if storageType == storage.StorageTypeDatabase {
-		return NewDatabase(address, password)
+		return New(address, password)
 	}
 
 	return nil, fmt.Errorf("unknown storage type: %s", storageType)

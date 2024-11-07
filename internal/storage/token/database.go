@@ -16,7 +16,7 @@ type Database struct {
 	db *redis.Client
 }
 
-func NewDatabase(address, password string) (*Database, error) {
+func New(address, password string) (*Database, error) {
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     address,
 		Password: password,

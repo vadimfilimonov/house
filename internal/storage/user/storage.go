@@ -24,7 +24,7 @@ func GetStorage(storageType, databaseURL string) (Storage, error) {
 	}
 
 	if storageType == storage.StorageTypeDatabase {
-		db, err := NewDatabase(databaseURL)
+		db, err := New(databaseURL)
 		if err != nil {
 			return nil, fmt.Errorf("cannot return database storage: %w", err)
 		}
