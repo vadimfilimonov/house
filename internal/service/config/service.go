@@ -17,6 +17,8 @@ type Config struct {
 	ServerAddress string `env:"SERVER_ADDRESS"`
 	// Address of the database connection
 	DatabaseURL string `env:"DATABASE_URL"`
+	// The secret key for signing the JWT token
+	JwtSecretKey string `env:"JWT_SECRET_KEY"`
 }
 
 func init() {
