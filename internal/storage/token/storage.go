@@ -9,8 +9,8 @@ import (
 )
 
 type Storage interface {
-	Add(ctx context.Context, key, value string, expiration time.Duration) error
-	Get(ctx context.Context, key string) (string, error)
+	Add(ctx context.Context, key string, expiration time.Duration) error
+	Has(ctx context.Context, key string) bool
 }
 
 func GetStorage(storageType, address, password string) (Storage, error) {

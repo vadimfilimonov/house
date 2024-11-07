@@ -36,7 +36,7 @@ func main() {
 	userManager := user.New(uStorage, tStorage, tokenManager)
 
 	r := chi.NewRouter()
-	r.Post("/dummyLogin", api.NewDummyLogin(tokenManager))
+	r.Post("/dummyLogin", api.NewDummyLogin(tokenManager, tStorage))
 	r.Post("/login", api.NewLogin(userManager))
 	r.Post("/register", api.NewRegister(userManager))
 
