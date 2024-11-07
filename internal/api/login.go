@@ -1,22 +1,22 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
 )
 
-type RegisterInput struct {
-	Email    string `json:"email"`
+type LoginInput struct {
+	ID       string `json:"user_id"`
 	Password string `json:"password"`
-	UserType string `json:"user_type"`
 }
 
-type RegisterOutput struct {
-	UserID string `json:"user_id"`
+type LoginOutput struct {
+	Token string `json:"token"`
 }
 
-func NewRegister(userManager userManager) func(http.ResponseWriter, *http.Request) {
+func NewLogin(userManager userManager) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
 		defer r.Body.Close()
@@ -26,7 +26,7 @@ func NewRegister(userManager userManager) func(http.ResponseWriter, *http.Reques
 			return
 		}
 
-		var requestBody RegisterInput
+		var requestBody LoginInput
 
 		err = json.Unmarshal([]byte(body), &requestBody)
 		if err != nil {
@@ -34,25 +34,20 @@ func NewRegister(userManager userManager) func(http.ResponseWriter, *http.Reques
 			return
 		}
 
-		userID, err := userManager.Register(requestBody.Email, requestBody.Password, requestBody.UserType)
+		token, err := userManager.Login(context.Background(), requestBody.ID, requestBody.Password)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		if userID == nil {
-			http.Error(w, "userID is empty", http.StatusBadRequest)
-			return
-		}
-
-		response, err := json.Marshal(RegisterOutput{UserID: *userID})
+		response, err := json.Marshal(LoginOutput{Token: *token})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		w.Header().Add("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
+		w.WriteHeader(http.StatusOK)
 		w.Write(response)
 	}
 }
