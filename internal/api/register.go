@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -21,6 +22,8 @@ type RegisterOutput struct {
 
 func NewRegister(userManager userManager) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.Background()
+
 		body, err := io.ReadAll(r.Body)
 		defer r.Body.Close()
 
@@ -37,7 +40,7 @@ func NewRegister(userManager userManager) func(http.ResponseWriter, *http.Reques
 			return
 		}
 
-		userID, err := userManager.Register(requestBody.Email, requestBody.Password, requestBody.UserType)
+		userID, err := userManager.Register(ctx, requestBody.Email, requestBody.Password, requestBody.UserType)
 		if err != nil {
 			if errors.Is(err, manager.ErrIncorrectInput) {
 				http.Error(w, err.Error(), http.StatusBadRequest)

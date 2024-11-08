@@ -16,8 +16,8 @@ var (
 )
 
 type userStorage interface {
-	Add(email, hashedPassword, userType string) (id *string, err error)
-	Get(id string) (*models.User, error)
+	Add(ctx context.Context, email, hashedPassword, userType string) (id *string, err error)
+	Get(ctx context.Context, id string) (*models.User, error)
 }
 
 type tokenStorage interface {
@@ -42,7 +42,7 @@ func New(userStorage userStorage, tokenStorage tokenStorage, tokenManager tokenM
 	}
 }
 
-func (u *UserManager) Register(email, password, userType string) (*string, error) {
+func (u *UserManager) Register(ctx context.Context, email, password, userType string) (*string, error) {
 	err := u.validate(email, password, userType)
 	if err != nil {
 		return nil, fmt.Errorf("validation error: %w", err)
@@ -53,7 +53,7 @@ func (u *UserManager) Register(email, password, userType string) (*string, error
 		return nil, fmt.Errorf("cannot hash password: %w", err)
 	}
 
-	id, err := u.userStorage.Add(email, hash, userType)
+	id, err := u.userStorage.Add(ctx, email, hash, userType)
 	if err != nil {
 		return nil, fmt.Errorf("cannot save user in storage: %w", err)
 	}
@@ -62,7 +62,7 @@ func (u *UserManager) Register(email, password, userType string) (*string, error
 }
 
 func (u *UserManager) Login(ctx context.Context, id, password string) (*string, error) {
-	user, err := u.userStorage.Get(id)
+	user, err := u.userStorage.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}

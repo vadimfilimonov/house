@@ -22,6 +22,8 @@ type LoginOutput struct {
 
 func NewLogin(userManager userManager) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.Background()
+
 		body, err := io.ReadAll(r.Body)
 		defer r.Body.Close()
 
@@ -38,7 +40,7 @@ func NewLogin(userManager userManager) func(http.ResponseWriter, *http.Request) 
 			return
 		}
 
-		token, err := userManager.Login(context.Background(), requestBody.ID, requestBody.Password)
+		token, err := userManager.Login(ctx, requestBody.ID, requestBody.Password)
 		if err != nil {
 			if errors.Is(err, storage.ErrUserNotFound) {
 				http.Error(w, err.Error(), http.StatusNotFound)

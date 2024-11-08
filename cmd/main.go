@@ -26,6 +26,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	defer uStorage.Close()
+
 	tStorage, err := tokenStorage.New(c.RedisAddress, c.RedisPassword)
 	if err != nil {
 		log.Fatal(err)
