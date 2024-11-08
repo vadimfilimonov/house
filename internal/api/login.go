@@ -3,8 +3,12 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
+
+	manager "github.com/vadimfilimonov/house/internal/service/user"
+	storage "github.com/vadimfilimonov/house/internal/storage/user"
 )
 
 type LoginInput struct {
@@ -22,7 +26,7 @@ func NewLogin(userManager userManager) func(http.ResponseWriter, *http.Request) 
 		defer r.Body.Close()
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			BadRequest(&w, err.Error())
 			return
 		}
 
@@ -30,19 +34,29 @@ func NewLogin(userManager userManager) func(http.ResponseWriter, *http.Request) 
 
 		err = json.Unmarshal([]byte(body), &requestBody)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			BadRequest(&w, err.Error())
 			return
 		}
 
 		token, err := userManager.Login(context.Background(), requestBody.ID, requestBody.Password)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			if errors.Is(err, storage.ErrUserNotFound) {
+				http.Error(w, err.Error(), http.StatusNotFound)
+				return
+			}
+
+			if errors.Is(err, manager.ErrWrongPassword) {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			BadRequest(&w, err.Error())
 			return
 		}
 
 		response, err := json.Marshal(LoginOutput{Token: *token})
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			BadRequest(&w, err.Error())
 			return
 		}
 

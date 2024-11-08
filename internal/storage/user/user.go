@@ -2,7 +2,9 @@ package storage
 
 import (
 	"context"
+	"crypto/rand"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -13,11 +15,15 @@ import (
 	"github.com/vadimfilimonov/house/internal/models"
 )
 
+var (
+	ErrUserNotFound = errors.New("user is not found")
+)
+
 type Database struct {
 	db *sql.DB
 }
 
-func NewDatabase(connectionString string) (*Database, error) {
+func New(connectionString string) (*Database, error) {
 	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		if err := db.Close(); err != nil {
@@ -70,7 +76,7 @@ func (d *Database) Get(id string) (*models.User, error) {
 	query := "SELECT email, password, user_type FROM users WHERE user_id = $1 LIMIT 1"
 	err := d.db.QueryRowContext(ctx, query, id).Scan(&email, &hashedPassword, &userType)
 	if err != nil {
-		return nil, err
+		return nil, ErrUserNotFound
 	}
 
 	return &models.User{
@@ -97,7 +103,22 @@ func runMigrations(db *sql.DB) error {
 		return err
 	}
 
-	m.Up()
+	err = m.Up()
+	if err != nil {
+		return err
+	}
 
 	return nil
+}
+
+func generateUserID() (*string, error) {
+	b := make([]byte, 16)
+
+	_, err := rand.Read(b)
+	if err != nil {
+		return nil, fmt.Errorf("cannot generate userID: %w", err)
+	}
+
+	uuid := fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
+	return &uuid, nil
 }
