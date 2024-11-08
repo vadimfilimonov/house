@@ -51,6 +51,10 @@ func (d *Database) Has(ctx context.Context, key string) bool {
 	return err == nil
 }
 
+func (d *Database) Close() error {
+	return d.db.Close()
+}
+
 func buildKey(key string) string {
 	return fmt.Sprintf("%s:%s", tokenKeyPrefix, key)
 }

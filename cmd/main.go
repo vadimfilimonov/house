@@ -33,6 +33,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	defer tStorage.Close()
+
 	tokenManager := auth_token.NewToken(c.JwtSecretKey)
 	userManager := user.New(uStorage, tStorage, tokenManager)
 
