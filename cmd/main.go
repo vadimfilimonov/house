@@ -2,9 +2,7 @@ package main
 
 import (
 	"log"
-	"net/http"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/vadimfilimonov/house/internal/api"
@@ -41,13 +39,7 @@ func main() {
 	webApp := fiber.New()
 	webApp.Post("/dummyLogin", api.NewDummyLogin(tokenManager, tStorage).Handle)
 	webApp.Post("/login", api.NewLogin(userManager).Handle)
-
-	r := chi.NewRouter()
-	r.Post("/register", api.NewRegister(userManager))
-
-	if err := http.ListenAndServe(c.ServerAddress, r); err != nil {
-		log.Fatal(err)
-	}
+	webApp.Post("/register", api.NewRegister(userManager).Handle)
 
 	if err := webApp.Listen(c.ServerAddress); err != nil {
 		log.Fatal(err)

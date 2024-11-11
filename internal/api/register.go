@@ -2,11 +2,10 @@ package api
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"io"
-	"net/http"
+	"fmt"
 
+	"github.com/gofiber/fiber/v2"
 	manager "github.com/vadimfilimonov/house/internal/service/user"
 )
 
@@ -20,50 +19,41 @@ type RegisterOutput struct {
 	UserID string `json:"user_id"`
 }
 
-func NewRegister(userManager userManager) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.Background()
+type Register struct {
+	userManager userManager
+}
 
-		body, err := io.ReadAll(r.Body)
-		defer r.Body.Close()
-
-		if err != nil {
-			BadRequest(&w, err.Error())
-			return
-		}
-
-		var requestBody RegisterInput
-
-		err = json.Unmarshal([]byte(body), &requestBody)
-		if err != nil {
-			BadRequest(&w, err.Error())
-			return
-		}
-
-		userID, err := userManager.Register(ctx, requestBody.Email, requestBody.Password, requestBody.UserType)
-		if err != nil {
-			if errors.Is(err, manager.ErrIncorrectInput) {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-
-			BadRequest(&w, err.Error())
-			return
-		}
-
-		if userID == nil {
-			http.Error(w, "userID is empty", http.StatusBadRequest)
-			return
-		}
-
-		response, err := json.Marshal(RegisterOutput{UserID: *userID})
-		if err != nil {
-			BadRequest(&w, err.Error())
-			return
-		}
-
-		w.Header().Add("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
-		w.Write(response)
+func NewRegister(userManager userManager) *Register {
+	return &Register{
+		userManager: userManager,
 	}
+}
+
+func (h *Register) Handle(c *fiber.Ctx) error {
+	ctx := context.Background()
+
+	var requestBody RegisterInput
+	if err := c.BodyParser(&requestBody); err != nil {
+		return fmt.Errorf("body parser: %w", err)
+	}
+
+	userID, err := h.userManager.Register(ctx, requestBody.Email, requestBody.Password, requestBody.UserType)
+	if err != nil {
+		if errors.Is(err, manager.ErrIncorrectInput) {
+			c.SendStatus(fiber.StatusBadRequest)
+			return err
+		}
+
+		return err
+	}
+
+	if userID == nil {
+		c.SendStatus(fiber.StatusBadRequest)
+		return fmt.Errorf("userID is empty")
+	}
+
+	c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
+	c.SendStatus(fiber.StatusCreated)
+
+	return c.JSON(RegisterOutput{UserID: *userID})
 }
