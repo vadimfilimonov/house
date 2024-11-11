@@ -3,6 +3,7 @@ start:
 
 build:
 	go build -o houseBuild cmd/main.go
+	chmod +x houseBuild
 
 lint:
 	go vet ./...
