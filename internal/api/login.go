@@ -2,10 +2,10 @@ package api
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"io"
-	"net/http"
+	"fmt"
+
+	"github.com/gofiber/fiber/v2"
 
 	manager "github.com/vadimfilimonov/house/internal/service/user"
 	storage "github.com/vadimfilimonov/house/internal/storage/user"
@@ -20,50 +20,40 @@ type LoginOutput struct {
 	Token string `json:"token"`
 }
 
-func NewLogin(userManager userManager) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.Background()
+type Login struct {
+	userManager userManager
+}
 
-		body, err := io.ReadAll(r.Body)
-		defer r.Body.Close()
-
-		if err != nil {
-			BadRequest(&w, err.Error())
-			return
-		}
-
-		var requestBody LoginInput
-
-		err = json.Unmarshal([]byte(body), &requestBody)
-		if err != nil {
-			BadRequest(&w, err.Error())
-			return
-		}
-
-		token, err := userManager.Login(ctx, requestBody.ID, requestBody.Password)
-		if err != nil {
-			if errors.Is(err, storage.ErrUserNotFound) {
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			}
-
-			if errors.Is(err, manager.ErrWrongPassword) {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-
-			BadRequest(&w, err.Error())
-			return
-		}
-
-		response, err := json.Marshal(LoginOutput{Token: *token})
-		if err != nil {
-			BadRequest(&w, err.Error())
-			return
-		}
-
-		w.Header().Add("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write(response)
+func NewLogin(userManager userManager) *Login {
+	return &Login{
+		userManager: userManager,
 	}
+}
+
+func (h *Login) Handle(c *fiber.Ctx) error {
+	ctx := context.Background()
+
+	var requestBody LoginInput
+	if err := c.BodyParser(&requestBody); err != nil {
+		return fmt.Errorf("body parser: %w", err)
+	}
+
+	token, err := h.userManager.Login(ctx, requestBody.ID, requestBody.Password)
+	if err != nil {
+		if errors.Is(err, storage.ErrUserNotFound) {
+			c.Status(fiber.StatusNotFound)
+			return err
+		}
+
+		if errors.Is(err, manager.ErrWrongPassword) {
+			c.Status(fiber.StatusBadRequest)
+			return err
+		}
+
+		return err
+	}
+
+	c.Set("Content-Type", "application/json")
+
+	return c.JSON(LoginOutput{Token: *token})
 }
