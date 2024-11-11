@@ -21,7 +21,8 @@ type userStorage interface {
 }
 
 type tokenStorage interface {
-	Add(ctx context.Context, key string, expiration time.Duration) error
+	Add(ctx context.Context, key, value string, expiration time.Duration) error
+	Get(ctx context.Context, key string) (string, error)
 }
 
 type tokenManager interface {
@@ -72,13 +73,19 @@ func (u *UserManager) Login(ctx context.Context, id, password string) (*string, 
 		return nil, ErrWrongPassword
 	}
 
+	savedToken, err := u.tokenStorage.Get(ctx, user.ID)
+	if err == nil {
+		return &savedToken, nil
+	}
+
 	token, err := u.tokenManager.Encode(user.ID, user.UserType)
 	if err != nil {
 		return nil, err
+	} else if token == nil {
+		return nil, fmt.Errorf("token is nil")
 	}
 
-	err = u.tokenStorage.Add(ctx, *token, 24*time.Hour)
-	if err != nil {
+	if err := u.tokenStorage.Add(ctx, user.ID, *token, 24*time.Hour); err != nil {
 		return nil, err
 	}
 

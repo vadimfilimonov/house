@@ -16,8 +16,7 @@ import (
 
 func main() {
 	c := config.New()
-	err := c.Parse()
-	if err != nil {
+	if err := c.Parse(); err != nil {
 		log.Fatal(err)
 	}
 
@@ -43,8 +42,7 @@ func main() {
 	r.Post("/login", api.NewLogin(userManager))
 	r.Post("/register", api.NewRegister(userManager))
 
-	err = http.ListenAndServe(c.ServerAddress, r)
-	if err != nil {
+	if err := http.ListenAndServe(c.ServerAddress, r); err != nil {
 		log.Fatal(err)
 	}
 }

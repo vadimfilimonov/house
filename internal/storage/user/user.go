@@ -109,9 +109,8 @@ func runMigrations(db *sql.DB) error {
 		return err
 	}
 
-	err = m.Up()
-	if err != nil {
-		return err
+	if err := m.Up(); err != nil {
+		log.Println(err)
 	}
 
 	return nil
