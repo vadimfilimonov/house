@@ -1,11 +1,11 @@
 package api
 
 import (
-	"context"
 	"errors"
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
+
 	manager "github.com/vadimfilimonov/house/internal/service/user"
 )
 
@@ -30,7 +30,7 @@ func NewRegister(userManager userManager) *Register {
 }
 
 func (h *Register) Handle(c *fiber.Ctx) error {
-	ctx := context.Background()
+	ctx := c.UserContext()
 
 	var requestBody RegisterInput
 	if err := c.BodyParser(&requestBody); err != nil {

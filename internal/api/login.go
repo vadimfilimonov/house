@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"errors"
 	"fmt"
 
@@ -31,7 +30,7 @@ func NewLogin(userManager userManager) *Login {
 }
 
 func (h *Login) Handle(c *fiber.Ctx) error {
-	ctx := context.Background()
+	ctx := c.UserContext()
 
 	var requestBody LoginInput
 	if err := c.BodyParser(&requestBody); err != nil {

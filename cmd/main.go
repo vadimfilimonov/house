@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -14,6 +15,8 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
+
 	c := config.New()
 	if err := c.Parse(); err != nil {
 		log.Fatal(err)
@@ -37,11 +40,19 @@ func main() {
 	userManager := user.New(uStorage, tStorage, tokenManager)
 
 	webApp := fiber.New()
+	webApp.Use(contextMiddleware(ctx))
 	webApp.Post("/dummyLogin", api.NewDummyLogin(tokenManager, tStorage).Handle)
 	webApp.Post("/login", api.NewLogin(userManager).Handle)
 	webApp.Post("/register", api.NewRegister(userManager).Handle)
 
 	if err := webApp.Listen(c.ServerAddress); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func contextMiddleware(ctx context.Context) func(c *fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		c.SetUserContext(ctx)
+		return c.Next()
 	}
 }

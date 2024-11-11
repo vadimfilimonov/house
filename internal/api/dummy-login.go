@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+
 	"github.com/vadimfilimonov/house/internal/models"
 )
 
@@ -39,7 +40,7 @@ func NewDummyLogin(tokenManager tokenManager, tokenStorage tokenStorage) *DummyL
 }
 
 func (h *DummyLogin) Handle(c *fiber.Ctx) error {
-	ctx := context.Background()
+	ctx := c.UserContext()
 
 	var requestBody DummyLoginInput
 	if err := c.BodyParser(&requestBody); err != nil {
