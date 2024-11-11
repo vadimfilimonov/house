@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/gofiber/fiber/v2"
 
 	"github.com/vadimfilimonov/house/internal/api"
 	"github.com/vadimfilimonov/house/internal/service/auth_token"
@@ -37,12 +38,18 @@ func main() {
 	tokenManager := auth_token.NewToken(c.JwtSecretKey)
 	userManager := user.New(uStorage, tStorage, tokenManager)
 
+	webApp := fiber.New()
+	webApp.Post("/dummyLogin", api.NewDummyLogin(tokenManager, tStorage).Handle)
+
 	r := chi.NewRouter()
-	r.Post("/dummyLogin", api.NewDummyLogin(tokenManager, tStorage))
 	r.Post("/login", api.NewLogin(userManager))
 	r.Post("/register", api.NewRegister(userManager))
 
 	if err := http.ListenAndServe(c.ServerAddress, r); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := webApp.Listen(c.ServerAddress); err != nil {
 		log.Fatal(err)
 	}
 }

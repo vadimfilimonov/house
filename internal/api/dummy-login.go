@@ -2,12 +2,10 @@ package api
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/vadimfilimonov/house/internal/models"
 )
 
@@ -28,64 +26,57 @@ type DummyLoginOutput struct {
 	Token string `json:"token"`
 }
 
-func NewDummyLogin(tokenManager tokenManager, tokenStorage tokenStorage) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.Background()
+type DummyLogin struct {
+	tokenManager tokenManager
+	tokenStorage tokenStorage
+}
 
-		body, err := io.ReadAll(r.Body)
-		defer r.Body.Close()
-
-		if err != nil {
-			BadRequest(&w, err.Error())
-			return
-		}
-
-		var requestBody DummyLoginInput
-		if err := json.Unmarshal([]byte(body), &requestBody); err != nil {
-			BadRequest(&w, err.Error())
-			return
-		}
-
-		var userID string
-		switch requestBody.UserType {
-		case models.UserTypeClient:
-			userID = models.FakeClientUserID
-		case models.UserTypeModerator:
-			userID = models.FakeModeratorUserID
-		default:
-			http.Error(w, fmt.Sprintf("user type %s is not supported", requestBody.UserType), http.StatusNotFound)
-			return
-		}
-
-		var token *string
-
-		savedToken, err := tokenStorage.Get(ctx, userID)
-		if err == nil {
-			token = &savedToken
-		} else {
-			token, err = tokenManager.Encode(userID, requestBody.UserType)
-			if err != nil {
-				BadRequest(&w, err.Error())
-				return
-			} else if token == nil {
-				BadRequest(&w, "token is nil")
-				return
-			}
-
-			if err := tokenStorage.Add(ctx, userID, *token, 24*time.Hour); err != nil {
-				BadRequest(&w, err.Error())
-				return
-			}
-		}
-
-		response, err := json.Marshal(DummyLoginOutput{Token: *token})
-		if err != nil {
-			BadRequest(&w, err.Error())
-			return
-		}
-
-		w.Header().Add("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write(response)
+func NewDummyLogin(tokenManager tokenManager, tokenStorage tokenStorage) *DummyLogin {
+	return &DummyLogin{
+		tokenManager: tokenManager,
+		tokenStorage: tokenStorage,
 	}
+}
+
+func (h *DummyLogin) Handle(c *fiber.Ctx) error {
+	ctx := context.Background()
+
+	var requestBody DummyLoginInput
+	if err := c.BodyParser(&requestBody); err != nil {
+		return fmt.Errorf("body parser: %w", err)
+	}
+
+	var userID string
+	switch requestBody.UserType {
+	case models.UserTypeClient:
+		userID = models.FakeClientUserID
+	case models.UserTypeModerator:
+		userID = models.FakeModeratorUserID
+	default:
+		c.SendStatus(fiber.StatusNotFound)
+		return fmt.Errorf("user type %s is not supported", requestBody.UserType)
+	}
+
+	var token *string
+
+	savedToken, err := h.tokenStorage.Get(ctx, userID)
+	if err == nil {
+		token = &savedToken
+	} else {
+		token, err = h.tokenManager.Encode(userID, requestBody.UserType)
+		if err != nil {
+			return err
+		} else if token == nil {
+			return fmt.Errorf("token is nil")
+		}
+
+		if err := h.tokenStorage.Add(ctx, userID, *token, 24*time.Hour); err != nil {
+			return err
+		}
+	}
+
+	c.Set("Content-Type", "application/json")
+	c.SendStatus(fiber.StatusOK)
+
+	return c.JSON(DummyLoginOutput{Token: *token})
 }
