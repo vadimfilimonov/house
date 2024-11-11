@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/vadimfilimonov/house/internal/models"
+	"github.com/vadimfilimonov/house/internal/service/auth_token"
 )
 
 type houseManager interface {
@@ -37,6 +38,23 @@ func NewHouseCreate(houseManager houseManager) *HouseCreate {
 }
 
 func (h *HouseCreate) Handle(c *fiber.Ctx) error {
+	jwtPayload, err := jwtPayloadFromRequest(c)
+	if err != nil {
+		c.SendStatus(fiber.StatusUnauthorized)
+		return err
+	}
+
+	userType, ok := jwtPayload[auth_token.ClaimsKeyUserType].(string)
+	if !ok {
+		c.SendStatus(fiber.StatusInternalServerError)
+		return err
+	}
+
+	if userType != models.UserTypeModerator {
+		c.SendStatus(fiber.StatusForbidden)
+		return fmt.Errorf("user type %s cannot create house", userType)
+	}
+
 	var requestBody HouseCreateInput
 	if err := c.BodyParser(&requestBody); err != nil {
 		return fmt.Errorf("body parser: %w", err)

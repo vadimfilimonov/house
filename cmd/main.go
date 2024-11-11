@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/vadimfilimonov/house/internal/api"
@@ -41,14 +42,24 @@ func main() {
 	userManager := user.New(uStorage, tStorage, tokenManager)
 	houseManager := house.New()
 
-	webApp := fiber.New()
-	webApp.Use(contextMiddleware(ctx))
-	webApp.Post("/dummyLogin", api.NewDummyLogin(tokenManager, tStorage).Handle)
-	webApp.Post("/login", api.NewLogin(userManager).Handle)
-	webApp.Post("/register", api.NewRegister(userManager).Handle)
-	webApp.Post("/house/create", api.NewHouseCreate(houseManager).Handle)
+	app := fiber.New()
+	app.Use(contextMiddleware(ctx))
 
-	if err := webApp.Listen(c.ServerAddress); err != nil {
+	publicGroup := app.Group("")
+	publicGroup.Post("/dummyLogin", api.NewDummyLogin(tokenManager, tStorage).Handle)
+	publicGroup.Post("/login", api.NewLogin(userManager).Handle)
+	publicGroup.Post("/register", api.NewRegister(userManager).Handle)
+
+	authorizedGroup := app.Group("")
+	authorizedGroup.Use(jwtware.New(jwtware.Config{
+		SigningKey: jwtware.SigningKey{
+			Key: c.JwtSecretKey,
+		},
+		ContextKey: api.ContextKeyUser,
+	}))
+	authorizedGroup.Post("/house/create", api.NewHouseCreate(houseManager).Handle)
+
+	if err := app.Listen(c.ServerAddress); err != nil {
 		log.Fatal(err)
 	}
 }
