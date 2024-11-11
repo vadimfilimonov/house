@@ -40,9 +40,9 @@ func main() {
 
 	webApp := fiber.New()
 	webApp.Post("/dummyLogin", api.NewDummyLogin(tokenManager, tStorage).Handle)
+	webApp.Post("/login", api.NewLogin(userManager).Handle)
 
 	r := chi.NewRouter()
-	r.Post("/login", api.NewLogin(userManager))
 	r.Post("/register", api.NewRegister(userManager))
 
 	if err := http.ListenAndServe(c.ServerAddress, r); err != nil {
