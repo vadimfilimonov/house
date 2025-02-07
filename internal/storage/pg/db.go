@@ -42,6 +42,8 @@ func New(connectionString string) (*Storage, error) {
 			syncErr = fmt.Errorf("cannot ping db: %w", err)
 			return
 		}
+
+		storage.db = db
 	})
 
 	return storage, syncErr
