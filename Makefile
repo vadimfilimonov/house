@@ -1,6 +1,9 @@
 start:
 	go run cmd/main.go
 
+start-db:
+	redis-server
+
 build:
 	go build -o houseBuild cmd/main.go
 	chmod +x houseBuild
