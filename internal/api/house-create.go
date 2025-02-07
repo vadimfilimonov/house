@@ -19,7 +19,7 @@ type HouseCreateInput struct {
 }
 
 type HouseCreateOutput struct {
-	ID        string  `json:"id"`
+	ID        int     `json:"id"`
 	Address   string  `json:"address"`
 	Year      int     `json:"year"`
 	Developer *string `json:"developer,omitempty"`
