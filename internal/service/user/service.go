@@ -15,12 +15,12 @@ var (
 	ErrWrongPassword = errors.New("password is wrong")
 )
 
-type userStorage interface {
+type userStore interface {
 	Add(ctx context.Context, email, hashedPassword, userType string) (id *string, err error)
 	Get(ctx context.Context, id string) (*models.User, error)
 }
 
-type tokenStorage interface {
+type tokenStore interface {
 	Add(ctx context.Context, key, value string, expiration time.Duration) error
 	Get(ctx context.Context, key string) (string, error)
 }
@@ -30,22 +30,21 @@ type tokenManager interface {
 }
 
 type UserManager struct {
-	userStorage  userStorage
-	tokenStorage tokenStorage
+	userStore    userStore
+	tokenStore   tokenStore
 	tokenManager tokenManager
 }
 
-func New(userStorage userStorage, tokenStorage tokenStorage, tokenManager tokenManager) *UserManager {
+func New(userStorage userStore, tokenStorage tokenStore, tokenManager tokenManager) *UserManager {
 	return &UserManager{
-		userStorage:  userStorage,
-		tokenStorage: tokenStorage,
+		userStore:    userStorage,
+		tokenStore:   tokenStorage,
 		tokenManager: tokenManager,
 	}
 }
 
 func (u *UserManager) Register(ctx context.Context, email, password, userType string) (*string, error) {
-	err := u.validate(email, password, userType)
-	if err != nil {
+	if err := u.validate(email, password, userType); err != nil {
 		return nil, fmt.Errorf("validation error: %w", err)
 	}
 
@@ -54,7 +53,7 @@ func (u *UserManager) Register(ctx context.Context, email, password, userType st
 		return nil, fmt.Errorf("cannot hash password: %w", err)
 	}
 
-	id, err := u.userStorage.Add(ctx, email, hash, userType)
+	id, err := u.userStore.Add(ctx, email, hash, userType)
 	if err != nil {
 		return nil, fmt.Errorf("cannot save user in storage: %w", err)
 	}
@@ -63,7 +62,7 @@ func (u *UserManager) Register(ctx context.Context, email, password, userType st
 }
 
 func (u *UserManager) Login(ctx context.Context, id, password string) (*string, error) {
-	user, err := u.userStorage.Get(ctx, id)
+	user, err := u.userStore.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +72,7 @@ func (u *UserManager) Login(ctx context.Context, id, password string) (*string, 
 		return nil, ErrWrongPassword
 	}
 
-	savedToken, err := u.tokenStorage.Get(ctx, user.ID)
+	savedToken, err := u.tokenStore.Get(ctx, user.ID)
 	if err == nil {
 		return &savedToken, nil
 	}
@@ -85,7 +84,7 @@ func (u *UserManager) Login(ctx context.Context, id, password string) (*string, 
 		return nil, fmt.Errorf("token is nil")
 	}
 
-	if err := u.tokenStorage.Add(ctx, user.ID, *token, 24*time.Hour); err != nil {
+	if err := u.tokenStore.Add(ctx, user.ID, *token, 24*time.Hour); err != nil {
 		return nil, err
 	}
 
