@@ -15,6 +15,7 @@ import (
 
 var (
 	ErrUserNotFound = errors.New("user is not found")
+	defaultTimeout  = 5 * time.Second
 )
 
 type Store struct {
@@ -26,14 +27,13 @@ func New(storage *pg.Storage) *Store {
 }
 
 func (d *Store) Add(ctx context.Context, email, hashedPassword, userType string) (*string, error) {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
 	defer cancel()
 
 	id := uuid.New().String()
 
 	query := `INSERT INTO users (user_id, email, password, user_type) VALUES ($1, $2, $3, $4)`
-	_, err := d.storage.ExecContext(ctx, query, id, email, hashedPassword, userType)
-	if err != nil {
+	if _, err := d.storage.ExecContext(ctx, query, id, email, hashedPassword, userType); err != nil {
 		return nil, fmt.Errorf("cannot add user to database: %w", err)
 	}
 
@@ -41,12 +41,8 @@ func (d *Store) Add(ctx context.Context, email, hashedPassword, userType string)
 }
 
 func (d *Store) Get(ctx context.Context, id string) (*models.User, error) {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
 	defer cancel()
-
-	var email string
-	var hashedPassword string
-	var userType string
 
 	query := "SELECT email, password, user_type FROM users WHERE user_id = $1 LIMIT 1"
 
@@ -55,6 +51,7 @@ func (d *Store) Get(ctx context.Context, id string) (*models.User, error) {
 		return nil, fmt.Errorf("sql row is nil")
 	}
 
+	var email, hashedPassword, userType string
 	if err := sqlRow.Scan(&email, &hashedPassword, &userType); err != nil {
 		return nil, ErrUserNotFound
 	}
