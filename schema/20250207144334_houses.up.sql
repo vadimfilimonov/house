@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS houses (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    address VARCHAR(255) NOT NULL,
+    year INT NOT NULL,
+    developer VARCHAR(255),
+    created_at TIMESTAMP,
+    update_at TIMESTAMP,
+);
