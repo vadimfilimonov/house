@@ -25,19 +25,17 @@ func (s *Store) Add(ctx context.Context, address string, year int, developer *st
 	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
 	defer cancel()
 
-	query := `INSERT INTO houses (address, year, developer, created_at) VALUE ($1, $2, $3, $4)`
+	query := `INSERT INTO houses (address, year, developer, created_at) VALUE ($1, $2, $3, NOW())`
 
-	now := time.Now().UTC().Format(time.RFC3339)
-	_, err := s.storage.ExecContext(ctx, query, address, year, developer, now)
+	_, err := s.storage.ExecContext(ctx, query, address, year, developer)
 	if err != nil {
 		return nil, fmt.Errorf("cannot add house to database: %w", err)
 	}
 
-	// TODO: Получать HouseID
+	// TODO: Получать HouseID, CreatedAt
 	return &models.House{
 		Address:   address,
 		Year:      year,
 		Developer: developer,
-		CreatedAt: &now,
 	}, nil
 }
