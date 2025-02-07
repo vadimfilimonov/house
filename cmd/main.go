@@ -10,6 +10,7 @@ import (
 	"github.com/vadimfilimonov/house/internal/service/auth_token"
 	"github.com/vadimfilimonov/house/internal/service/config"
 	"github.com/vadimfilimonov/house/internal/service/user"
+	"github.com/vadimfilimonov/house/internal/storage/pg"
 	tokenStore "github.com/vadimfilimonov/house/internal/store/token"
 	userStore "github.com/vadimfilimonov/house/internal/store/user"
 )
@@ -22,26 +23,28 @@ func main() {
 		log.Fatal(err)
 	}
 
-	uStorage, err := userStore.New(c.DatabaseURL)
+	storage, err := pg.New(c.DatabaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer uStorage.Close()
+	defer storage.Close()
 
-	tStorage, err := tokenStore.New(c.RedisAddress, c.RedisPassword)
+	uStore := userStore.New(storage)
+
+	tStore, err := tokenStore.New(c.RedisAddress, c.RedisPassword)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer tStorage.Close()
+	defer tStore.Close()
 
 	tokenManager := auth_token.NewToken(c.JwtSecretKey)
-	userManager := user.New(uStorage, tStorage, tokenManager)
+	userManager := user.New(uStore, tStore, tokenManager)
 
 	webApp := fiber.New()
 	webApp.Use(contextMiddleware(ctx))
-	webApp.Post("/dummyLogin", api.NewDummyLogin(tokenManager, tStorage).Handle)
+	webApp.Post("/dummyLogin", api.NewDummyLogin(tokenManager, tStore).Handle)
 	webApp.Post("/login", api.NewLogin(userManager).Handle)
 	webApp.Post("/register", api.NewRegister(userManager).Handle)
 
