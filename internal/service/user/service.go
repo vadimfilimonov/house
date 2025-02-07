@@ -35,10 +35,10 @@ type UserManager struct {
 	tokenManager tokenManager
 }
 
-func New(userStorage userStore, tokenStorage tokenStore, tokenManager tokenManager) *UserManager {
+func New(userStore userStore, tokenStore tokenStore, tokenManager tokenManager) *UserManager {
 	return &UserManager{
-		userStore:    userStorage,
-		tokenStore:   tokenStorage,
+		userStore:    userStore,
+		tokenStore:   tokenStore,
 		tokenManager: tokenManager,
 	}
 }
