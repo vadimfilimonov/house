@@ -10,8 +10,10 @@ import (
 	"github.com/vadimfilimonov/house/internal/service/auth_token"
 	"github.com/vadimfilimonov/house/internal/service/config"
 	"github.com/vadimfilimonov/house/internal/service/user"
-	tokenStorage "github.com/vadimfilimonov/house/internal/storage/token"
-	userStorage "github.com/vadimfilimonov/house/internal/storage/user"
+	"github.com/vadimfilimonov/house/internal/storage/pg"
+	"github.com/vadimfilimonov/house/internal/storage/redis"
+	tokenStore "github.com/vadimfilimonov/house/internal/store/token"
+	userStore "github.com/vadimfilimonov/house/internal/store/user"
 )
 
 func main() {
@@ -22,26 +24,27 @@ func main() {
 		log.Fatal(err)
 	}
 
-	uStorage, err := userStorage.New(c.DatabaseURL)
+	database, err := pg.New(c.DatabaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer database.Close()
 
-	defer uStorage.Close()
-
-	tStorage, err := tokenStorage.New(c.RedisAddress, c.RedisPassword)
+	redisClient, err := redis.New(ctx, c.RedisAddress, c.RedisPassword)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer redisClient.Close()
 
-	defer tStorage.Close()
+	uStore := userStore.New(database)
+	tStore := tokenStore.New(redisClient)
 
 	tokenManager := auth_token.NewToken(c.JwtSecretKey)
-	userManager := user.New(uStorage, tStorage, tokenManager)
+	userManager := user.New(uStore, tStore, tokenManager)
 
 	webApp := fiber.New()
 	webApp.Use(contextMiddleware(ctx))
-	webApp.Post("/dummyLogin", api.NewDummyLogin(tokenManager, tStorage).Handle)
+	webApp.Post("/dummyLogin", api.NewDummyLogin(tokenManager, tStore).Handle)
 	webApp.Post("/login", api.NewLogin(userManager).Handle)
 	webApp.Post("/register", api.NewRegister(userManager).Handle)
 
