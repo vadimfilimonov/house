@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 
 	manager "github.com/vadimfilimonov/house/internal/service/user"
-	storage "github.com/vadimfilimonov/house/internal/storage/user"
+	store "github.com/vadimfilimonov/house/internal/store/user"
 )
 
 type LoginInput struct {
@@ -39,7 +39,7 @@ func (h *Login) Handle(c *fiber.Ctx) error {
 
 	token, err := h.userManager.Login(ctx, requestBody.ID, requestBody.Password)
 	if err != nil {
-		if errors.Is(err, storage.ErrUserNotFound) {
+		if errors.Is(err, store.ErrUserNotFound) {
 			c.Status(fiber.StatusNotFound)
 			return err
 		}
