@@ -26,16 +26,7 @@ func (t *Token) Add(
 	value string,
 	expiration time.Duration,
 ) error {
-	statusCmd := t.storage.Set(ctx, buildKey(key), value, expiration)
-	if statusCmd == nil {
-		return fmt.Errorf("redis status cmd is nil")
-	}
-
-	if err := statusCmd.Err(); err != nil {
-		return err
-	}
-
-	return nil
+	return t.storage.Set(ctx, buildKey(key), value, expiration)
 }
 
 func (t *Token) Get(ctx context.Context, key string) (string, error) {

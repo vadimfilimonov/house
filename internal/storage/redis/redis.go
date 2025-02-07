@@ -53,8 +53,17 @@ func (s *Storage) Get(ctx context.Context, key string) (string, error) {
 	return stringCmd.Result()
 }
 
-func (s *Storage) Set(ctx context.Context, key string, value any, expiration time.Duration) *redis.StatusCmd {
-	return s.db.Set(ctx, key, value, expiration)
+func (s *Storage) Set(ctx context.Context, key string, value any, expiration time.Duration) error {
+	statusCmd := s.db.Set(ctx, key, value, expiration)
+	if statusCmd == nil {
+		return fmt.Errorf("redis status cmd is nil")
+	}
+
+	if err := statusCmd.Err(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *Storage) Has(ctx context.Context, key string) bool {
