@@ -20,4 +20,11 @@ test-coverage:
 install:
 	go mod tidy
 
-.PHONY: start build lint test test-coverage install
+# Название директории, куда попадут файлы миграции
+MIGRATE_DIR=schema
+
+create-migration:
+	@read -p "Введите название таблицы: " NAME; \
+	migrate create -ext sql -dir $(MIGRATE_DIR) $$NAME
+
+.PHONY: start build lint test test-coverage install create-migration
