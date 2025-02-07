@@ -10,8 +10,8 @@ import (
 	"github.com/vadimfilimonov/house/internal/service/auth_token"
 	"github.com/vadimfilimonov/house/internal/service/config"
 	"github.com/vadimfilimonov/house/internal/service/user"
-	tokenStorage "github.com/vadimfilimonov/house/internal/storage/token"
-	userStorage "github.com/vadimfilimonov/house/internal/storage/user"
+	tokenStore "github.com/vadimfilimonov/house/internal/store/token"
+	userStore "github.com/vadimfilimonov/house/internal/store/user"
 )
 
 func main() {
@@ -22,14 +22,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	uStorage, err := userStorage.New(c.DatabaseURL)
+	uStorage, err := userStore.New(c.DatabaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	defer uStorage.Close()
 
-	tStorage, err := tokenStorage.New(c.RedisAddress, c.RedisPassword)
+	tStorage, err := tokenStore.New(c.RedisAddress, c.RedisPassword)
 	if err != nil {
 		log.Fatal(err)
 	}
