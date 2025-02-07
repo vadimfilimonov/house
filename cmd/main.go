@@ -14,6 +14,7 @@ import (
 	"github.com/vadimfilimonov/house/internal/service/user"
 	"github.com/vadimfilimonov/house/internal/storage/pg"
 	"github.com/vadimfilimonov/house/internal/storage/redis"
+	houseStore "github.com/vadimfilimonov/house/internal/store/house"
 	tokenStore "github.com/vadimfilimonov/house/internal/store/token"
 	userStore "github.com/vadimfilimonov/house/internal/store/user"
 )
@@ -39,11 +40,12 @@ func main() {
 	defer redisClient.Close()
 
 	uStore := userStore.New(database)
+	hStore := houseStore.New(database)
 	tStore := tokenStore.New(redisClient)
 
 	tokenManager := auth_token.NewToken(c.JwtSecretKey)
 	userManager := user.New(uStore, tStore, tokenManager)
-	houseManager := house.New()
+	houseManager := house.New(hStore)
 
 	app := fiber.New()
 	app.Use(contextMiddleware(ctx))

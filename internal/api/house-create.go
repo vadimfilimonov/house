@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
@@ -9,7 +10,7 @@ import (
 )
 
 type houseManager interface {
-	Create(address string, year int, developer *string) (*models.House, error)
+	Create(ctx context.Context, address string, year int, developer *string) (*models.House, error)
 }
 
 type HouseCreateInput struct {
@@ -38,6 +39,8 @@ func NewHouseCreate(houseManager houseManager) *HouseCreate {
 }
 
 func (h *HouseCreate) Handle(c *fiber.Ctx) error {
+	ctx := c.UserContext()
+
 	jwtPayload, err := jwtPayloadFromRequest(c)
 	if err != nil {
 		c.SendStatus(fiber.StatusUnauthorized)
@@ -60,7 +63,7 @@ func (h *HouseCreate) Handle(c *fiber.Ctx) error {
 		return fmt.Errorf("body parser: %w", err)
 	}
 
-	house, err := h.houseManager.Create(requestBody.Address, requestBody.Year, requestBody.Developer)
+	house, err := h.houseManager.Create(ctx, requestBody.Address, requestBody.Year, requestBody.Developer)
 	if err != nil {
 		c.SendStatus(fiber.StatusInternalServerError)
 		return err
