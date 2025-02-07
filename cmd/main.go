@@ -11,6 +11,7 @@ import (
 	"github.com/vadimfilimonov/house/internal/service/config"
 	"github.com/vadimfilimonov/house/internal/service/user"
 	"github.com/vadimfilimonov/house/internal/storage/pg"
+	"github.com/vadimfilimonov/house/internal/storage/redis"
 	tokenStore "github.com/vadimfilimonov/house/internal/store/token"
 	userStore "github.com/vadimfilimonov/house/internal/store/user"
 )
@@ -23,21 +24,20 @@ func main() {
 		log.Fatal(err)
 	}
 
-	storage, err := pg.New(c.DatabaseURL)
+	database, err := pg.New(c.DatabaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer database.Close()
 
-	defer storage.Close()
-
-	uStore := userStore.New(storage)
-
-	tStore, err := tokenStore.New(c.RedisAddress, c.RedisPassword)
+	redisClient, err := redis.New(ctx, c.RedisAddress, c.RedisPassword)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer redisClient.Close()
 
-	defer tStore.Close()
+	uStore := userStore.New(database)
+	tStore := tokenStore.New(redisClient)
 
 	tokenManager := auth_token.NewToken(c.JwtSecretKey)
 	userManager := user.New(uStore, tStore, tokenManager)
