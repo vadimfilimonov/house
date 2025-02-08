@@ -50,7 +50,7 @@ func (h *HouseCreate) Handle(c *fiber.Ctx) error {
 	userType, ok := jwtPayload[auth_token.ClaimsKeyUserType].(string)
 	if !ok {
 		c.SendStatus(fiber.StatusInternalServerError)
-		return err
+		return fmt.Errorf("cannot get user type")
 	}
 
 	if userType != models.UserTypeModerator {
