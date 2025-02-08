@@ -25,7 +25,7 @@ func (s *Store) Add(ctx context.Context, address string, year int, developer *st
 	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
 	defer cancel()
 
-	query := `INSERT INTO houses (address, year, developer, created_at) VALUE ($1, $2, $3, NOW())`
+	query := `INSERT INTO houses (address, year, developer, created_at) VALUES ($1, $2, $3, NOW())`
 
 	_, err := s.storage.ExecContext(ctx, query, address, year, developer)
 	if err != nil {
