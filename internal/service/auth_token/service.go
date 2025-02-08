@@ -13,10 +13,10 @@ const (
 )
 
 type Token struct {
-	secretKey string
+	secretKey []byte
 }
 
-func NewToken(secretKey string) *Token {
+func NewToken(secretKey []byte) *Token {
 	return &Token{
 		secretKey: secretKey,
 	}
@@ -29,7 +29,7 @@ func (t *Token) Encode(sub, userType string) (*string, error) {
 		"exp":             time.Now().Add(24 * time.Hour).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
-	signedToken, err := token.SignedString([]byte(t.secretKey))
+	signedToken, err := token.SignedString(t.secretKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot sign token: %w", err)
 	}

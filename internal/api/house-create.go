@@ -55,7 +55,7 @@ func (h *HouseCreate) Handle(c *fiber.Ctx) error {
 
 	if userType != models.UserTypeModerator {
 		c.SendStatus(fiber.StatusForbidden)
-		return fmt.Errorf("user type %s cannot create house", userType)
+		return fmt.Errorf("user type \"%s\" cannot create house", userType)
 	}
 
 	var requestBody HouseCreateInput

@@ -43,7 +43,7 @@ func main() {
 	hStore := houseStore.New(database)
 	tStore := tokenStore.New(redisClient)
 
-	tokenManager := auth_token.NewToken(c.JwtSecretKey)
+	tokenManager := auth_token.NewToken([]byte(c.JwtSecretKey))
 	userManager := user.New(uStore, tStore, tokenManager)
 	houseManager := house.New(hStore)
 
@@ -58,7 +58,7 @@ func main() {
 	authorizedGroup := app.Group("")
 	authorizedGroup.Use(jwtware.New(jwtware.Config{
 		SigningKey: jwtware.SigningKey{
-			Key: c.JwtSecretKey,
+			Key: []byte(c.JwtSecretKey),
 		},
 		ContextKey: api.ContextKeyUser,
 	}))
