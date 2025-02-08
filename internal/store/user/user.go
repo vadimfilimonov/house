@@ -32,7 +32,7 @@ func (s *Store) Add(ctx context.Context, email, hashedPassword, userType string)
 
 	id := uuid.New().String()
 
-	query := `INSERT INTO users (user_id, email, password, user_type) VALUES ($1, $2, $3, $4)`
+	query := `INSERT INTO users (id, email, password, user_type) VALUES ($1, $2, $3, $4)`
 	if _, err := s.storage.ExecContext(ctx, query, id, email, hashedPassword, userType); err != nil {
 		return nil, fmt.Errorf("cannot add user to database: %w", err)
 	}
@@ -44,7 +44,7 @@ func (s *Store) Get(ctx context.Context, id string) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
 	defer cancel()
 
-	query := "SELECT email, password, user_type FROM users WHERE user_id = $1 LIMIT 1"
+	query := "SELECT email, password, user_type FROM users WHERE id = $1 LIMIT 1"
 
 	sqlRow := s.storage.QueryRowContext(ctx, query, id)
 	if sqlRow == nil {

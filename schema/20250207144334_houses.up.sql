@@ -4,5 +4,5 @@ CREATE TABLE IF NOT EXISTS houses (
     year INT NOT NULL,
     developer VARCHAR(255),
     created_at TIMESTAMP,
-    update_at TIMESTAMP,
+    update_at TIMESTAMP
 );
