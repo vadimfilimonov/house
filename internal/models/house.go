@@ -1,7 +1,13 @@
 package models
 
+type HouseID int // Уникальный номер дома
+
+func (h HouseID) Int() int {
+	return int(h)
+}
+
 type House struct {
-	ID        int     `json:"id"                   db:"id"         example:"12345"`                           // Уникальный номер дома
+	ID        HouseID `json:"id"                   db:"id"         example:"12345"`
 	Address   string  `json:"address"              db:"address"    example:"Лесная улица, 7, Москва, 125196"` // Адрес
 	Year      int     `json:"year"                 db:"year"       example:"2000"`                            // Год постройки
 	Developer *string `json:"developer,omitempty"  db:"developer"  example:"Мэрия города"`                    // Застройщик

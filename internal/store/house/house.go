@@ -43,7 +43,7 @@ func (s *Store) Add(ctx context.Context, address string, year int, developer *st
 	createdAt := timestamp.Format("2006-01-02T15:04:05Z")
 
 	return &models.House{
-		ID:        houseID,
+		ID:        models.HouseID(houseID),
 		Address:   address,
 		Year:      year,
 		Developer: developer,

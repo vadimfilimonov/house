@@ -70,7 +70,7 @@ func (h *HouseCreate) Handle(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(HouseCreateOutput{
-		ID:        house.ID,
+		ID:        house.ID.Int(),
 		Address:   house.Address,
 		Year:      house.Year,
 		Developer: house.Developer,
