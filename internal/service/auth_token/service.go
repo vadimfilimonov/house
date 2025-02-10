@@ -8,15 +8,15 @@ import (
 )
 
 const (
-	claimsKeySub      = "sub"
-	claimsKeyUserType = "userType"
+	ClaimsKeySub      = "sub"
+	ClaimsKeyUserType = "userType"
 )
 
 type Token struct {
-	secretKey string
+	secretKey []byte
 }
 
-func NewToken(secretKey string) *Token {
+func NewToken(secretKey []byte) *Token {
 	return &Token{
 		secretKey: secretKey,
 	}
@@ -24,12 +24,12 @@ func NewToken(secretKey string) *Token {
 
 func (t *Token) Encode(sub, userType string) (*string, error) {
 	payload := jwt.MapClaims{
-		claimsKeySub:      sub,
-		claimsKeyUserType: userType,
+		ClaimsKeySub:      sub,
+		ClaimsKeyUserType: userType,
 		"exp":             time.Now().Add(24 * time.Hour).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
-	signedToken, err := token.SignedString([]byte(t.secretKey))
+	signedToken, err := token.SignedString(t.secretKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot sign token: %w", err)
 	}
@@ -55,7 +55,7 @@ func (t *Token) Decode(tokenString string) (id *string, userType *string, err er
 		return nil, nil, fmt.Errorf("cannot parse claims")
 	}
 
-	sub, exists := claims[claimsKeySub]
+	sub, exists := claims[ClaimsKeySub]
 	if exists {
 		userID, ok := sub.(string)
 		if ok {
@@ -63,7 +63,7 @@ func (t *Token) Decode(tokenString string) (id *string, userType *string, err er
 		}
 	}
 
-	userTypeValue, exists := claims[claimsKeyUserType]
+	userTypeValue, exists := claims[ClaimsKeyUserType]
 	if exists {
 		userTypeStr, ok := userTypeValue.(string)
 		if ok {

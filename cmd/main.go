@@ -4,14 +4,17 @@ import (
 	"context"
 	"log"
 
+	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/vadimfilimonov/house/internal/api"
 	"github.com/vadimfilimonov/house/internal/service/auth_token"
 	"github.com/vadimfilimonov/house/internal/service/config"
+	"github.com/vadimfilimonov/house/internal/service/house"
 	"github.com/vadimfilimonov/house/internal/service/user"
 	"github.com/vadimfilimonov/house/internal/storage/pg"
 	"github.com/vadimfilimonov/house/internal/storage/redis"
+	houseStore "github.com/vadimfilimonov/house/internal/store/house"
 	tokenStore "github.com/vadimfilimonov/house/internal/store/token"
 	userStore "github.com/vadimfilimonov/house/internal/store/user"
 )
@@ -37,18 +40,31 @@ func main() {
 	defer redisClient.Close()
 
 	uStore := userStore.New(database)
+	hStore := houseStore.New(database)
 	tStore := tokenStore.New(redisClient)
 
-	tokenManager := auth_token.NewToken(c.JwtSecretKey)
+	tokenManager := auth_token.NewToken([]byte(c.JwtSecretKey))
 	userManager := user.New(uStore, tStore, tokenManager)
+	houseManager := house.New(hStore)
 
-	webApp := fiber.New()
-	webApp.Use(contextMiddleware(ctx))
-	webApp.Post("/dummyLogin", api.NewDummyLogin(tokenManager, tStore).Handle)
-	webApp.Post("/login", api.NewLogin(userManager).Handle)
-	webApp.Post("/register", api.NewRegister(userManager).Handle)
+	app := fiber.New()
+	app.Use(contextMiddleware(ctx))
 
-	if err := webApp.Listen(c.ServerAddress); err != nil {
+	publicGroup := app.Group("")
+	publicGroup.Post("/dummyLogin", api.NewDummyLogin(tokenManager, tStore).Handle)
+	publicGroup.Post("/login", api.NewLogin(userManager).Handle)
+	publicGroup.Post("/register", api.NewRegister(userManager).Handle)
+
+	authorizedGroup := app.Group("")
+	authorizedGroup.Use(jwtware.New(jwtware.Config{
+		SigningKey: jwtware.SigningKey{
+			Key: []byte(c.JwtSecretKey),
+		},
+		ContextKey: api.ContextKeyUser,
+	}))
+	authorizedGroup.Post("/house/create", api.NewHouseCreate(houseManager).Handle)
+
+	if err := app.Listen(c.ServerAddress); err != nil {
 		log.Fatal(err)
 	}
 }
