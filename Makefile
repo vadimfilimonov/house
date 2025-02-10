@@ -27,4 +27,8 @@ create-migration:
 	@read -p "Введите название таблицы: " NAME; \
 	migrate create -ext sql -dir $(MIGRATE_DIR) $$NAME
 
-.PHONY: start build lint test test-coverage install create-migration
+down-migration:
+	@read -p "Введите строку подключения к БД: " DB_PATH; \
+	migrate -path ${MIGRATE_DIR} -database "$$DB_PATH" down --all
+
+.PHONY: start build lint test test-coverage install create-migration down-migration
