@@ -2,6 +2,7 @@ package house
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -10,7 +11,8 @@ import (
 )
 
 var (
-	defaultTimeout = 5 * time.Second
+	ErrHouseNotAdded = errors.New(("house is not added"))
+	defaultTimeout   = 5 * time.Second
 )
 
 type Store struct {
@@ -25,17 +27,26 @@ func (s *Store) Add(ctx context.Context, address string, year int, developer *st
 	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
 	defer cancel()
 
-	query := `INSERT INTO houses (address, year, developer, created_at) VALUES ($1, $2, $3, NOW())`
+	query := `INSERT INTO houses (address, year, developer, created_at) VALUES ($1, $2, $3, NOW()) RETURNING id, created_at`
 
-	_, err := s.storage.ExecContext(ctx, query, address, year, developer)
-	if err != nil {
-		return nil, fmt.Errorf("cannot add house to database: %w", err)
+	sqlRow := s.storage.QueryRowContext(ctx, query, address, year, developer)
+	if sqlRow == nil {
+		return nil, fmt.Errorf("sql row is nil")
 	}
 
-	// TODO: Получать HouseID, CreatedAt
+	var houseID int
+	var timestamp time.Time
+	if err := sqlRow.Scan(&houseID, &timestamp); err != nil {
+		return nil, ErrHouseNotAdded
+	}
+
+	createdAt := timestamp.Format("2006-01-02T15:04:05Z")
+
 	return &models.House{
+		ID:        houseID,
 		Address:   address,
 		Year:      year,
 		Developer: developer,
+		CreatedAt: &createdAt,
 	}, nil
 }
