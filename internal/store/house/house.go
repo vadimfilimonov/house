@@ -50,3 +50,15 @@ func (s *Store) Add(ctx context.Context, address string, year int, developer *st
 		CreatedAt: &createdAt,
 	}, nil
 }
+
+func (s *Store) Update(ctx context.Context, houseID int) error {
+	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
+	defer cancel()
+
+	query := `UPDATE houses SET update_at = NOW() WHERE id = $1`
+	if _, err := s.storage.ExecContext(ctx, query, houseID); err != nil {
+		return fmt.Errorf("cannot update houses table: %w", err)
+	}
+
+	return nil
+}
