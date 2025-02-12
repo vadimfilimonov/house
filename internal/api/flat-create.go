@@ -13,14 +13,14 @@ type flatManager interface {
 }
 
 type FlatCreateInput struct {
-	Number  int `json:"id"`
+	Number  int `json:"number"`
 	HouseID int `json:"house_id"`
 	Price   int `json:"price"`
 	Rooms   int `json:"rooms"`
 }
 
 type FlatCreateOutput struct {
-	Number  int    `json:"id"`
+	Number  int    `json:"number"`
 	HouseID int    `json:"house_id"`
 	Price   int    `json:"price"`
 	Rooms   int    `json:"rooms"`
@@ -28,12 +28,14 @@ type FlatCreateOutput struct {
 }
 
 type FlatCreate struct {
-	flatManager flatManager
+	flatManager  flatManager
+	houseManager houseManager
 }
 
-func NewFlatCreate(flatManager flatManager) *FlatCreate {
+func NewFlatCreate(flatManager flatManager, houseManager houseManager) *FlatCreate {
 	return &FlatCreate{
-		flatManager: flatManager,
+		flatManager:  flatManager,
+		houseManager: houseManager,
 	}
 }
 
@@ -52,6 +54,13 @@ func (f *FlatCreate) Handle(c *fiber.Ctx) error {
 	}
 
 	flat, err := f.flatManager.Create(ctx, requestBody.Number, requestBody.HouseID, requestBody.Price, requestBody.Rooms)
+	if err != nil {
+		c.SendStatus(fiber.StatusInternalServerError)
+		return err
+	}
+
+	// TODO: Переделать на транзакцию
+	err = f.houseManager.Update(ctx, requestBody.HouseID)
 	if err != nil {
 		c.SendStatus(fiber.StatusInternalServerError)
 		return err
