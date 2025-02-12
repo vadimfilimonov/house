@@ -9,6 +9,7 @@ import (
 
 type houseStore interface {
 	Add(ctx context.Context, address string, year int, developer *string) (*models.House, error)
+	Update(ctx context.Context, houseID int) error
 }
 
 type House struct {
@@ -32,6 +33,10 @@ func (h *House) Create(ctx context.Context, address string, year int, developer 
 	}
 
 	return house, nil
+}
+
+func (h *House) Update(ctx context.Context, id int) error {
+	return h.store.Update(ctx, id)
 }
 
 func validateYear(year int) error {

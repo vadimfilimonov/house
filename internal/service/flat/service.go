@@ -8,14 +8,14 @@ import (
 )
 
 const (
-	minFlatID     = 1
-	minHouseID    = 1
+	minNumber     = 1
+	minHouseID    = 0
 	minPrice      = 0
 	minRoomsCount = 1
 )
 
 type flatStore interface {
-	Add(ctx context.Context, id, houseID, price, rooms int) (*models.Flat, error)
+	Add(ctx context.Context, number, houseID, price, rooms int) (*models.Flat, error)
 }
 
 type Flat struct {
@@ -26,13 +26,13 @@ func New(store flatStore) *Flat {
 	return &Flat{store: store}
 }
 
-func (f *Flat) Create(ctx context.Context, id, houseID, price, rooms int) (*models.Flat, error) {
-	err := validate(id, houseID, price, rooms)
+func (f *Flat) Create(ctx context.Context, number, houseID, price, rooms int) (*models.Flat, error) {
+	err := validate(number, houseID, price, rooms)
 	if err != nil {
 		return nil, err
 	}
 
-	flat, err := f.store.Add(ctx, id, houseID, price, rooms)
+	flat, err := f.store.Add(ctx, number, houseID, price, rooms)
 	if err != nil {
 		return nil, err
 	}
@@ -40,9 +40,9 @@ func (f *Flat) Create(ctx context.Context, id, houseID, price, rooms int) (*mode
 	return flat, nil
 }
 
-func validate(id, houseID, price, rooms int) error {
-	if id < minFlatID {
-		return fmt.Errorf("id \"%d\" cannot be less than %d", id, minFlatID)
+func validate(number, houseID, price, rooms int) error {
+	if number < minNumber {
+		return fmt.Errorf("flat number \"%d\" cannot be less than %d", number, minNumber)
 	}
 
 	if houseID < minHouseID {
