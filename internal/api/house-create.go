@@ -11,6 +11,7 @@ import (
 
 type houseManager interface {
 	Create(ctx context.Context, address string, year int, developer *string) (*models.House, error)
+	Update(ctx context.Context, id int) error
 }
 
 type HouseCreateInput struct {
@@ -70,7 +71,7 @@ func (h *HouseCreate) Handle(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(HouseCreateOutput{
-		ID:        house.ID,
+		ID:        house.ID.Int(),
 		Address:   house.Address,
 		Year:      house.Year,
 		Developer: house.Developer,

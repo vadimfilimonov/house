@@ -43,10 +43,22 @@ func (s *Store) Add(ctx context.Context, address string, year int, developer *st
 	createdAt := timestamp.Format("2006-01-02T15:04:05Z")
 
 	return &models.House{
-		ID:        houseID,
+		ID:        models.HouseID(houseID),
 		Address:   address,
 		Year:      year,
 		Developer: developer,
 		CreatedAt: &createdAt,
 	}, nil
+}
+
+func (s *Store) Update(ctx context.Context, houseID int) error {
+	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
+	defer cancel()
+
+	query := `UPDATE houses SET update_at = NOW() WHERE id = $1`
+	if _, err := s.storage.ExecContext(ctx, query, houseID); err != nil {
+		return fmt.Errorf("cannot update houses table: %w", err)
+	}
+
+	return nil
 }
