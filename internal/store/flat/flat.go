@@ -28,9 +28,8 @@ func (s *Store) Add(ctx context.Context, number, houseID, price, rooms int) (*mo
 	defer cancel()
 
 	query := `INSERT INTO flats (number, house_id, price, rooms, status) VALUES ($1, $2, $3, $4, $5)`
-	sqlRow := s.storage.QueryRowContext(ctx, query, number, houseID, price, rooms, models.CreatedStatus)
-	if sqlRow == nil {
-		return nil, fmt.Errorf("sql row is nil")
+	if _, err := s.storage.ExecContext(ctx, query, number, houseID, price, rooms, models.CreatedStatus); err != nil {
+		return nil, fmt.Errorf("cannot add flat to database: %w", err)
 	}
 
 	return &models.Flat{
