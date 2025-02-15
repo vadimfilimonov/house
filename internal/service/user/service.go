@@ -17,7 +17,7 @@ var (
 
 type userStore interface {
 	Add(ctx context.Context, email, hashedPassword, userType string) (id *string, err error)
-	Get(ctx context.Context, id string) (*models.User, error)
+	Get(ctx context.Context, email string) (*models.User, error)
 }
 
 type tokenStore interface {
@@ -61,8 +61,8 @@ func (u *UserManager) Register(ctx context.Context, email, password, userType st
 	return id, nil
 }
 
-func (u *UserManager) Login(ctx context.Context, id, password string) (*string, error) {
-	user, err := u.userStore.Get(ctx, id)
+func (u *UserManager) Login(ctx context.Context, email, password string) (*string, error) {
+	user, err := u.userStore.Get(ctx, email)
 	if err != nil {
 		return nil, err
 	}
