@@ -11,7 +11,7 @@ import (
 )
 
 type LoginInput struct {
-	ID       string `json:"user_id"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
@@ -37,7 +37,17 @@ func (h *Login) Handle(c *fiber.Ctx) error {
 		return fmt.Errorf("body parser: %w", err)
 	}
 
-	token, err := h.userManager.Login(ctx, requestBody.ID, requestBody.Password)
+	if requestBody.Email == "" {
+		c.Status(fiber.StatusBadRequest)
+		return fmt.Errorf("email cannot be empty")
+	}
+
+	if requestBody.Password == "" {
+		c.Status(fiber.StatusBadRequest)
+		return fmt.Errorf("password cannot be empty")
+	}
+
+	token, err := h.userManager.Login(ctx, requestBody.Email, requestBody.Password)
 	if err != nil {
 		if errors.Is(err, store.ErrUserNotFound) {
 			c.Status(fiber.StatusNotFound)

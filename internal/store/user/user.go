@@ -40,19 +40,19 @@ func (s *Store) Add(ctx context.Context, email, hashedPassword, userType string)
 	return &id, nil
 }
 
-func (s *Store) Get(ctx context.Context, id string) (*models.User, error) {
+func (s *Store) Get(ctx context.Context, email string) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
 	defer cancel()
 
-	query := "SELECT email, password, user_type FROM users WHERE id = $1 LIMIT 1"
+	query := "SELECT id, password, user_type FROM users WHERE email = $1 LIMIT 1"
 
-	sqlRow := s.storage.QueryRowContext(ctx, query, id)
+	sqlRow := s.storage.QueryRowContext(ctx, query, email)
 	if sqlRow == nil {
 		return nil, fmt.Errorf("sql row is nil")
 	}
 
-	var email, hashedPassword, userType string
-	if err := sqlRow.Scan(&email, &hashedPassword, &userType); err != nil {
+	var id, hashedPassword, userType string
+	if err := sqlRow.Scan(&id, &hashedPassword, &userType); err != nil {
 		return nil, ErrUserNotFound
 	}
 
