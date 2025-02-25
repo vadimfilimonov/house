@@ -11,7 +11,6 @@ import (
 
 type houseManager interface {
 	Create(ctx context.Context, address string, year int, developer *string) (*models.House, error)
-	Update(ctx context.Context, id int) error
 }
 
 type HouseCreateInput struct {
