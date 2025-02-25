@@ -59,13 +59,6 @@ func (f *FlatCreate) Handle(c *fiber.Ctx) error {
 		return err
 	}
 
-	// TODO: Переделать на транзакцию
-	err = f.houseManager.Update(ctx, requestBody.HouseID)
-	if err != nil {
-		c.SendStatus(fiber.StatusInternalServerError)
-		return err
-	}
-
 	return c.JSON(FlatCreateOutput{
 		Number:  flat.Number,
 		HouseID: flat.HouseID.Int(),
