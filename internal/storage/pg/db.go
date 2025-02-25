@@ -61,6 +61,10 @@ func (s *Storage) ExecContext(ctx context.Context, query string, args ...any) (s
 	return s.db.ExecContext(ctx, query, args...)
 }
 
+func (s *Storage) BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error) {
+	return s.db.BeginTx(ctx, opts)
+}
+
 func runMigrations(db *sql.DB) error {
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 
