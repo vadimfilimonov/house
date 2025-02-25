@@ -46,6 +46,12 @@ func (s *Store) Add(ctx context.Context, number, houseID, price, rooms int) (*mo
 		return nil, fmt.Errorf("cannot add flat to database: %w", err)
 	}
 
+	housesQuery := `UPDATE houses SET update_at = NOW() WHERE id = $1`
+	_, err = tx.ExecContext(ctx, housesQuery, houseID)
+	if err != nil {
+		return nil, fmt.Errorf("cannot update houses table: %w", err)
+	}
+
 	err = tx.Commit()
 	if err != nil {
 		return nil, fmt.Errorf("transaction commit failed: %w", err)
