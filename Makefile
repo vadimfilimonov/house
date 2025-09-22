@@ -1,5 +1,5 @@
 start:
-	docker-compose up
+	docker-compose up --build
 
 start-db:
 	redis-server
@@ -9,10 +9,10 @@ build:
 	chmod +x houseBuild
 
 lint:
-	go vet ./...
+	docker run --rm -v $(PWD):/app -w /app house-app go vet ./...
 
 test:
-	go test ./...
+	docker run --rm -v $(PWD):/app -w /app house-app go test ./...
 
 test-coverage:
 	go test ./... -cover
