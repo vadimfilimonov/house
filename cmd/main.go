@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	jwtware "github.com/gofiber/contrib/jwt"
@@ -29,13 +30,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	database, err := pg.New(c.DatabaseURL)
+	connStr := fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		c.DatabaseHost, c.DatabasePort, c.PostgresUser, c.PostgresPassword, c.PostgresDatabaseName,
+	)
+
+	database, err := pg.New(connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer database.Close()
 
-	redisClient, err := redis.New(ctx, c.RedisAddress, c.RedisPassword)
+	redisClient, err := redis.New(ctx, c.RedisHost, c.RedisPort, c.RedisPassword)
 	if err != nil {
 		log.Fatal(err)
 	}
