@@ -1,5 +1,5 @@
 start:
-	go run cmd/main.go
+	docker-compose up
 
 start-db:
 	redis-server
