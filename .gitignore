@@ -1,3 +1,4 @@
 .env
 *.rdb
 houseBuild
+tmp

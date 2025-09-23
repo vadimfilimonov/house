@@ -1,0 +1,15 @@
+# Путь до рабочей директории
+root = "."
+tmp_dir = "tmp"
+
+[build]
+# Команда, которую выполняем при изменениях
+cmd = "go run ./cmd"
+# Папки и файлы, за которыми следить
+include_dir = ["."]
+include_ext = ["go", "yaml", "env"]
+# Игнорируем ненужное
+exclude_dir = ["vendor", "tmp", ".git"]
+
+[log]
+time = true

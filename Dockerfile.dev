@@ -1,0 +1,19 @@
+FROM golang:1.25
+
+# Устанавливаем рабочую директорию внутри контейнера
+WORKDIR /app
+
+# Копируем файлы зависимостей в контейнер
+COPY go.mod go.sum ./
+
+# Загружаем зависимости, чтобы потом быстрее билдилось
+RUN go mod download
+
+# Устанавливаем утилиту air для hot-reload
+RUN go install github.com/air-verse/air@latest
+
+# Добавляем GOPATH/bin в PATH (чтобы air был доступен)
+ENV PATH=$PATH:/go/bin
+
+# Запуск через air
+CMD ["air", "-c", ".air.toml"]

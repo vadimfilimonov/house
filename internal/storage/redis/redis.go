@@ -19,10 +19,10 @@ var (
 	initOnce = sync.Once{}
 )
 
-func New(ctx context.Context, address, password string) (*Storage, error) {
+func New(ctx context.Context, host, port, password string) (*Storage, error) {
 	initOnce.Do(func() {
 		client := redis.NewClient(&redis.Options{
-			Addr:     address,
+			Addr:     fmt.Sprintf("%s:%s", host, port),
 			Password: password,
 			DB:       0,
 		})

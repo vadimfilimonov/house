@@ -16,10 +16,20 @@ const (
 type Config struct {
 	// HTTP server startup address
 	ServerAddress string `env:"SERVER_ADDRESS"`
-	// Address of the database connection
-	DatabaseURL string `env:"DATABASE_URL"`
-	// Address of the redis connection
-	RedisAddress string `env:"REDIS_ADDRESS"`
+	// Host of the database
+	DatabaseHost string `env:"DB_HOST"`
+	// Port of the database
+	DatabasePort string `env:"DB_PORT"`
+	// Postgres user
+	PostgresUser string `env:"POSTGRES_USER"`
+	// Postgres password
+	PostgresPassword string `env:"POSTGRES_PASSWORD"`
+	// Postgres database name
+	PostgresDatabaseName string `env:"POSTGRES_DB"`
+	// Host for the redis connection
+	RedisHost string `env:"REDIS_HOST"`
+	// Port for the redis connection
+	RedisPort string `env:"REDIS_PORT"`
 	// Password of the redis
 	RedisPassword string `env:"REDIS_PASSWORD"`
 	// The secret key for signing the JWT token
@@ -45,8 +55,8 @@ func (c *Config) Parse() error {
 		c.ServerAddress = defaultServerAddress
 	}
 
-	if c.RedisAddress == "" {
-		c.RedisAddress = defaultRedisAddress
+	if c.RedisHost == "" {
+		c.RedisHost = defaultRedisAddress
 	}
 
 	return nil
