@@ -3,30 +3,6 @@ info:
   title: Тестовое задание для отбора на Backend Bootcamp
   version: 1.0.0
 paths:
-  /dummyLogin:
-    get:
-      description: >-
-        Упрощенный процесс получения токена для дальнейшего прохождения авторизации
-      tags:
-        - noAuth
-      parameters:
-        - name: user_type
-          in: query
-          schema:
-            $ref: '#/components/schemas/UserType'
-          required: true
-      responses:
-        '200':
-          description: Успешная аутентификация
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  token:
-                    $ref: '#/components/schemas/Token'
-        '500':
-          $ref: '#/components/responses/5xx'
   /login:
     post:
       description: >-
@@ -421,7 +397,7 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
-      description: Авторизация по токену, который был получен в методах /dummyLogin или /login
+      description: Авторизация по токену, который был получен в методе /login
 tags:
   - name: noAuth
     description: Доступно всем, авторизация не нужна

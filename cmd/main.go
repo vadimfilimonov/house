@@ -61,7 +61,6 @@ func main() {
 	app.Use(contextMiddleware(ctx))
 
 	publicGroup := app.Group("")
-	publicGroup.Post("/dummyLogin", api.NewDummyLogin(tokenManager, tStore).Handle)
 	publicGroup.Post("/login", api.NewLogin(userManager).Handle)
 	publicGroup.Post("/register", api.NewRegister(userManager).Handle)
 
