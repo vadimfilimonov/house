@@ -104,6 +104,8 @@ paths:
           $ref: '#/components/responses/400'
         '401':
           $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
         '500':
           $ref: '#/components/responses/5xx'
   /house/{id}:
@@ -252,6 +254,8 @@ paths:
           $ref: '#/components/responses/400'
         '401':
           $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
         '500':
           $ref: '#/components/responses/5xx'
 components:
@@ -260,6 +264,8 @@ components:
       description: Невалидные данные ввода
     '401':
       description: Неавторизованный доступ
+    '403':
+      description: Недостаточно прав
     5xx:
       description: Ошибка сервера
       headers:

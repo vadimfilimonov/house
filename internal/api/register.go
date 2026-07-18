@@ -52,8 +52,6 @@ func (h *Register) Handle(c *fiber.Ctx) error {
 		return fmt.Errorf("userID is empty")
 	}
 
-	c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
-	c.SendStatus(fiber.StatusCreated)
-
+	c.Status(fiber.StatusOK)
 	return c.JSON(RegisterOutput{UserID: *userID})
 }
