@@ -9,7 +9,7 @@ import (
 
 const (
 	minNumber     = 1
-	minHouseID    = 0
+	minHouseID    = 1
 	minPrice      = 0
 	minRoomsCount = 1
 )
