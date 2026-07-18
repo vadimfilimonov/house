@@ -19,6 +19,26 @@ type FlatCreateInput struct {
 	Rooms   int `json:"rooms"`
 }
 
+func (i FlatCreateInput) Validate() error {
+	if i.Number < 1 {
+		return fmt.Errorf("number cannot be less than 1")
+	}
+
+	if i.HouseID < 1 {
+		return fmt.Errorf("house_id cannot be less than 1")
+	}
+
+	if i.Price < 0 {
+		return fmt.Errorf("price cannot be less than 0")
+	}
+
+	if i.Rooms < 1 {
+		return fmt.Errorf("rooms cannot be less than 1")
+	}
+
+	return nil
+}
+
 type FlatCreateOutput struct {
 	ID      int    `json:"id"`
 	Number  int    `json:"number"`
@@ -52,6 +72,11 @@ func (f *FlatCreate) Handle(c *fiber.Ctx) error {
 	var requestBody FlatCreateInput
 	if err := c.BodyParser(&requestBody); err != nil {
 		return fmt.Errorf("body parser: %w", err)
+	}
+
+	if err := requestBody.Validate(); err != nil {
+		c.SendStatus(fiber.StatusBadRequest)
+		return err
 	}
 
 	flat, err := f.flatManager.Create(ctx, requestBody.Number, requestBody.HouseID, requestBody.Price, requestBody.Rooms)
