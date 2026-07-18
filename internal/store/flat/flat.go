@@ -6,13 +6,16 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/lib/pq"
+
 	"github.com/vadimfilimonov/house/internal/models"
 	"github.com/vadimfilimonov/house/internal/storage/pg"
 )
 
 var (
-	ErrHouseNotAdded = errors.New(("house is not added"))
-	defaultTimeout   = 5 * time.Second
+	ErrFlatAlreadyExists = errors.New("flat already exists")
+	ErrHouseNotAdded     = errors.New(("house is not added"))
+	defaultTimeout       = 5 * time.Second
 )
 
 type Store struct {
@@ -45,6 +48,11 @@ func (s *Store) Add(ctx context.Context, number, houseID, price, rooms int) (*mo
 	flatsQuery := `INSERT INTO flats (number, house_id, price, rooms, status) VALUES ($1, $2, $3, $4, $5) RETURNING id`
 	var flatID int
 	if err = tx.QueryRowContext(ctx, flatsQuery, number, houseID, price, rooms, models.CreatedStatus).Scan(&flatID); err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+			return nil, ErrFlatAlreadyExists
+		}
+
 		return nil, fmt.Errorf("cannot add flat to database: %w", err)
 	}
 

@@ -219,6 +219,8 @@ paths:
           $ref: '#/components/responses/400'
         '401':
           $ref: '#/components/responses/401'
+        '409':
+          $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/5xx'
   /flat/update:
@@ -265,6 +267,8 @@ components:
       description: Неавторизованный доступ
     '403':
       description: Недостаточно прав
+    '409':
+      description: Конфликт данных
     5xx:
       description: Ошибка сервера
   schemas:

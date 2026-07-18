@@ -2,11 +2,13 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/vadimfilimonov/house/internal/models"
+	flatStore "github.com/vadimfilimonov/house/internal/store/flat"
 )
 
 type flatManager interface {
@@ -14,10 +16,10 @@ type flatManager interface {
 }
 
 type FlatCreateInput struct {
-	Number  int `json:"number"`
-	HouseID int `json:"house_id"`
-	Price   int `json:"price"`
-	Rooms   int `json:"rooms"`
+	Number  int `json:"number"`   // Номер квартиры в доме
+	HouseID int `json:"house_id"` // Идентификатор дома, к которому относится квартира
+	Price   int `json:"price"`    // Цена квартиры в у.е.
+	Rooms   int `json:"rooms"`    // Количество комнат в квартире
 }
 
 func (i FlatCreateInput) Validate() error {
@@ -41,12 +43,12 @@ func (i FlatCreateInput) Validate() error {
 }
 
 type FlatCreateOutput struct {
-	ID      int    `json:"id"`
-	Number  int    `json:"number"`
-	HouseID int    `json:"house_id"`
-	Price   int    `json:"price"`
-	Rooms   int    `json:"rooms"`
-	Status  string `json:"status"`
+	ID      int    `json:"id"`       // Идентификатор созданной квартиры
+	Number  int    `json:"number"`   // Номер квартиры в доме
+	HouseID int    `json:"house_id"` // Идентификатор дома, к которому относится квартира
+	Price   int    `json:"price"`    // Цена квартиры в у.е.
+	Rooms   int    `json:"rooms"`    // Количество комнат в квартире
+	Status  string `json:"status"`   // Статус модерации квартиры
 }
 
 type FlatCreate struct {
@@ -88,6 +90,14 @@ func (f *FlatCreate) Handle(c *fiber.Ctx) error {
 
 	flat, err := f.flatManager.Create(ctx, requestBody.Number, requestBody.HouseID, requestBody.Price, requestBody.Rooms)
 	if err != nil {
+		if errors.Is(err, flatStore.ErrFlatAlreadyExists) {
+			if sendErr := c.SendStatus(fiber.StatusConflict); sendErr != nil {
+				log.Printf("cannot send status %d: %v", fiber.StatusConflict, sendErr)
+			}
+
+			return err
+		}
+
 		if sendErr := c.SendStatus(fiber.StatusInternalServerError); sendErr != nil {
 			log.Printf("cannot send status %d: %v", fiber.StatusInternalServerError, sendErr)
 		}
