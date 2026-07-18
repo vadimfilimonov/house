@@ -267,35 +267,6 @@ components:
       description: Недостаточно прав
     5xx:
       description: Ошибка сервера
-      headers:
-        Retry-After:
-          description: Время, через которое еще раз нужно сделать запрос
-          required: false
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - message
-            properties:
-              message:
-                type: string
-                description: Описание ошибки
-                example: что-то пошло не так
-              request_id:
-                type: string
-                description: >-
-                  Идентификатор запроса. Предназначен для более быстрого поиска
-                  проблем.
-                example: g12ugs67gqw67yu12fgeuqwd
-              code:
-                type: integer
-                description: >-
-                  Код ошибки. Предназначен для классификации проблем и более
-                  быстрого решения проблем.
-                example: 12345
   schemas:
     UserId:
       type: string
