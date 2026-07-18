@@ -13,7 +13,9 @@ services:
       - "8080:8080"
     # Переменные окружения для подключения к БД и Redis
     env_file:
-      - .env
+      - path: .env.example
+      - path: .env
+        required: false
     # Сначала должны запуститься db и redis
     depends_on:
       - db
@@ -27,7 +29,9 @@ services:
     restart: always
     # Настройки базы (логин, пароль, имя базы)
     env_file:
-      - .env
+      - path: .env.example
+      - path: .env
+        required: false
     # Пробрасываем порт БД наружу
     ports:
       - "5432:5432"
@@ -45,7 +49,9 @@ services:
     ports:
       - "6379:6379"
     env_file:
-      - .env
+      - path: .env.example
+      - path: .env
+        required: false
     # (опционально) примонтировать том для сохранения дампов
     # volumes:
     #   - redis_data:/data
