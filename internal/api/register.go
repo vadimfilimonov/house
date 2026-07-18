@@ -11,9 +11,9 @@ import (
 )
 
 type RegisterInput struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	UserType string `json:"user_type"`
+	Email    string `json:"email"`     // Email пользователя
+	Password string `json:"password"`  // Пароль пользователя
+	UserType string `json:"user_type"` // Тип пользователя: client или moderator
 }
 
 func (i RegisterInput) Validate() error {
@@ -33,7 +33,7 @@ func (i RegisterInput) Validate() error {
 }
 
 type RegisterOutput struct {
-	UserID string `json:"user_id"`
+	UserID string `json:"user_id"` // Идентификатор созданного пользователя
 }
 
 type Register struct {

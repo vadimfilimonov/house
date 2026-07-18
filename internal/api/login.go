@@ -11,8 +11,8 @@ import (
 )
 
 type LoginInput struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email"`    // Email пользователя
+	Password string `json:"password"` // Пароль пользователя
 }
 
 func (i LoginInput) Validate() error {
@@ -28,7 +28,7 @@ func (i LoginInput) Validate() error {
 }
 
 type LoginOutput struct {
-	Token string `json:"token"`
+	Token string `json:"token"` // Авторизационный токен
 }
 
 type Login struct {

@@ -15,9 +15,9 @@ type houseManager interface {
 }
 
 type HouseCreateInput struct {
-	Address   string  `json:"address"`
-	Year      int     `json:"year"`
-	Developer *string `json:"developer,omitempty"`
+	Address   string  `json:"address"`             // Адрес дома
+	Year      int     `json:"year"`                // Год постройки дома
+	Developer *string `json:"developer,omitempty"` // Застройщик дома
 }
 
 func (i HouseCreateInput) Validate() error {
@@ -43,12 +43,12 @@ func (i HouseCreateInput) Validate() error {
 }
 
 type HouseCreateOutput struct {
-	ID        int     `json:"id"`
-	Address   string  `json:"address"`
-	Year      int     `json:"year"`
-	Developer *string `json:"developer,omitempty"`
-	CreatedAt *string `json:"created_at,omitempty"`
-	UpdateAt  *string `json:"update_at,omitempty"`
+	ID        int     `json:"id"`                   // Идентификатор созданного дома
+	Address   string  `json:"address"`              // Адрес дома
+	Year      int     `json:"year"`                 // Год постройки дома
+	Developer *string `json:"developer,omitempty"`  // Застройщик дома
+	CreatedAt *string `json:"created_at,omitempty"` // Дата создания дома в базе
+	UpdateAt  *string `json:"update_at,omitempty"`  // Дата последнего добавления новой квартиры в дом
 }
 
 type HouseCreate struct {
