@@ -2,3 +2,5 @@
 *.rdb
 houseBuild
 tmp
+.gomodcache/
+.idea/
