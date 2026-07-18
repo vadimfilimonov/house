@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/vadimfilimonov/house/internal/models"
@@ -55,19 +56,30 @@ func (h *HouseCreate) Handle(c *fiber.Ctx) error {
 
 	jwtPayload, err := jwtPayloadFromRequest(c)
 	if err != nil {
-		c.SendStatus(fiber.StatusUnauthorized)
+		if sendErr := c.SendStatus(fiber.StatusUnauthorized); sendErr != nil {
+			log.Printf("cannot send status %d: %v", fiber.StatusUnauthorized, sendErr)
+		}
+
 		return err
 	}
 
 	userType, ok := jwtPayload[auth_token.ClaimsKeyUserType].(string)
 	if !ok {
-		c.SendStatus(fiber.StatusInternalServerError)
-		return fmt.Errorf("cannot get user type")
+		err := fmt.Errorf("cannot get user type")
+		if sendErr := c.SendStatus(fiber.StatusInternalServerError); sendErr != nil {
+			log.Printf("cannot send status %d: %v", fiber.StatusInternalServerError, sendErr)
+		}
+
+		return err
 	}
 
 	if userType != models.UserTypeModerator {
-		c.SendStatus(fiber.StatusForbidden)
-		return fmt.Errorf("user type \"%s\" cannot create house", userType)
+		err := fmt.Errorf("user type \"%s\" cannot create house", userType)
+		if sendErr := c.SendStatus(fiber.StatusForbidden); sendErr != nil {
+			log.Printf("cannot send status %d: %v", fiber.StatusForbidden, sendErr)
+		}
+
+		return err
 	}
 
 	var requestBody HouseCreateInput
@@ -76,13 +88,19 @@ func (h *HouseCreate) Handle(c *fiber.Ctx) error {
 	}
 
 	if err := requestBody.Validate(); err != nil {
-		c.SendStatus(fiber.StatusBadRequest)
+		if sendErr := c.SendStatus(fiber.StatusBadRequest); sendErr != nil {
+			log.Printf("cannot send status %d: %v", fiber.StatusBadRequest, sendErr)
+		}
+
 		return err
 	}
 
 	house, err := h.houseManager.Create(ctx, requestBody.Address, requestBody.Year, requestBody.Developer)
 	if err != nil {
-		c.SendStatus(fiber.StatusInternalServerError)
+		if sendErr := c.SendStatus(fiber.StatusInternalServerError); sendErr != nil {
+			log.Printf("cannot send status %d: %v", fiber.StatusInternalServerError, sendErr)
+		}
+
 		return err
 	}
 

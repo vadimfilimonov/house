@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/vadimfilimonov/house/internal/models"
@@ -65,7 +66,10 @@ func (f *FlatCreate) Handle(c *fiber.Ctx) error {
 
 	_, err := jwtPayloadFromRequest(c)
 	if err != nil {
-		c.SendStatus(fiber.StatusUnauthorized)
+		if sendErr := c.SendStatus(fiber.StatusUnauthorized); sendErr != nil {
+			log.Printf("cannot send status %d: %v", fiber.StatusUnauthorized, sendErr)
+		}
+
 		return err
 	}
 
@@ -75,13 +79,19 @@ func (f *FlatCreate) Handle(c *fiber.Ctx) error {
 	}
 
 	if err := requestBody.Validate(); err != nil {
-		c.SendStatus(fiber.StatusBadRequest)
+		if sendErr := c.SendStatus(fiber.StatusBadRequest); sendErr != nil {
+			log.Printf("cannot send status %d: %v", fiber.StatusBadRequest, sendErr)
+		}
+
 		return err
 	}
 
 	flat, err := f.flatManager.Create(ctx, requestBody.Number, requestBody.HouseID, requestBody.Price, requestBody.Rooms)
 	if err != nil {
-		c.SendStatus(fiber.StatusInternalServerError)
+		if sendErr := c.SendStatus(fiber.StatusInternalServerError); sendErr != nil {
+			log.Printf("cannot send status %d: %v", fiber.StatusInternalServerError, sendErr)
+		}
+
 		return err
 	}
 
