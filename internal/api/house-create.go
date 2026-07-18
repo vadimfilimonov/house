@@ -19,6 +19,18 @@ type HouseCreateInput struct {
 	Developer *string `json:"developer,omitempty"`
 }
 
+func (i HouseCreateInput) Validate() error {
+	if i.Address == "" {
+		return fmt.Errorf("address cannot be empty")
+	}
+
+	if i.Year < 0 {
+		return fmt.Errorf("year cannot be less than 0")
+	}
+
+	return nil
+}
+
 type HouseCreateOutput struct {
 	ID        int     `json:"id"`
 	Address   string  `json:"address"`
@@ -61,6 +73,11 @@ func (h *HouseCreate) Handle(c *fiber.Ctx) error {
 	var requestBody HouseCreateInput
 	if err := c.BodyParser(&requestBody); err != nil {
 		return fmt.Errorf("body parser: %w", err)
+	}
+
+	if err := requestBody.Validate(); err != nil {
+		c.SendStatus(fiber.StatusBadRequest)
+		return err
 	}
 
 	house, err := h.houseManager.Create(ctx, requestBody.Address, requestBody.Year, requestBody.Developer)
