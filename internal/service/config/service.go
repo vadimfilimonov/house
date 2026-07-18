@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"log"
+	"os"
 
 	env "github.com/caarlos0/env/v6"
 	"github.com/joho/godotenv"
@@ -36,17 +36,15 @@ type Config struct {
 	JwtSecretKey string `env:"JWT_SECRET_KEY"`
 }
 
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatalf("Error loading .env file")
-	}
-}
-
 func New() Config {
 	return Config{}
 }
 
 func (c *Config) Parse() error {
+	if err := godotenv.Load(); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("cannot load .env file: %w", err)
+	}
+
 	if err := env.Parse(c); err != nil {
 		return fmt.Errorf("cannot parse env: %w", err)
 	}
