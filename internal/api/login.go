@@ -15,6 +15,18 @@ type LoginInput struct {
 	Password string `json:"password"`
 }
 
+func (i LoginInput) Validate() error {
+	if err := validateEmail(i.Email); err != nil {
+		return err
+	}
+
+	if err := validatePassword(i.Password); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type LoginOutput struct {
 	Token string `json:"token"`
 }
@@ -37,14 +49,9 @@ func (h *Login) Handle(c *fiber.Ctx) error {
 		return fmt.Errorf("body parser: %w", err)
 	}
 
-	if requestBody.Email == "" {
+	if err := requestBody.Validate(); err != nil {
 		c.Status(fiber.StatusBadRequest)
-		return fmt.Errorf("email cannot be empty")
-	}
-
-	if requestBody.Password == "" {
-		c.Status(fiber.StatusBadRequest)
-		return fmt.Errorf("password cannot be empty")
+		return err
 	}
 
 	token, err := h.userManager.Login(ctx, requestBody.Email, requestBody.Password)

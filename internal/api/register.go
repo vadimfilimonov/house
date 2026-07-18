@@ -15,6 +15,22 @@ type RegisterInput struct {
 	UserType string `json:"user_type"`
 }
 
+func (i RegisterInput) Validate() error {
+	if err := validateEmail(i.Email); err != nil {
+		return err
+	}
+
+	if err := validatePassword(i.Password); err != nil {
+		return err
+	}
+
+	if err := validateUserType(i.UserType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type RegisterOutput struct {
 	UserID string `json:"user_id"`
 }
@@ -35,6 +51,11 @@ func (h *Register) Handle(c *fiber.Ctx) error {
 	var requestBody RegisterInput
 	if err := c.BodyParser(&requestBody); err != nil {
 		return fmt.Errorf("body parser: %w", err)
+	}
+
+	if err := requestBody.Validate(); err != nil {
+		c.SendStatus(fiber.StatusBadRequest)
+		return err
 	}
 
 	userID, err := h.userManager.Register(ctx, requestBody.Email, requestBody.Password, requestBody.UserType)
