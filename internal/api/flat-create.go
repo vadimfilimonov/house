@@ -20,6 +20,7 @@ type FlatCreateInput struct {
 }
 
 type FlatCreateOutput struct {
+	ID      int    `json:"id"`
 	Number  int    `json:"number"`
 	HouseID int    `json:"house_id"`
 	Price   int    `json:"price"`
@@ -60,6 +61,7 @@ func (f *FlatCreate) Handle(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(FlatCreateOutput{
+		ID:      flat.ID,
 		Number:  flat.Number,
 		HouseID: flat.HouseID.Int(),
 		Price:   flat.Price,

@@ -42,8 +42,9 @@ func (s *Store) Add(ctx context.Context, number, houseID, price, rooms int) (*mo
 		}
 	}()
 
-	flatsQuery := `INSERT INTO flats (number, house_id, price, rooms, status) VALUES ($1, $2, $3, $4, $5)`
-	if _, err = tx.ExecContext(ctx, flatsQuery, number, houseID, price, rooms, models.CreatedStatus); err != nil {
+	flatsQuery := `INSERT INTO flats (number, house_id, price, rooms, status) VALUES ($1, $2, $3, $4, $5) RETURNING id`
+	var flatID int
+	if err = tx.QueryRowContext(ctx, flatsQuery, number, houseID, price, rooms, models.CreatedStatus).Scan(&flatID); err != nil {
 		return nil, fmt.Errorf("cannot add flat to database: %w", err)
 	}
 
@@ -57,6 +58,7 @@ func (s *Store) Add(ctx context.Context, number, houseID, price, rooms int) (*mo
 	}
 
 	return &models.Flat{
+		ID:      flatID,
 		Number:  number,
 		HouseID: models.HouseID(houseID),
 		Price:   price,

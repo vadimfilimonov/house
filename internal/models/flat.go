@@ -14,6 +14,7 @@ const (
 )
 
 type Flat struct {
+	ID      int     `db:"id"       example:"123456"`
 	Number  int     `db:"number"   example:"12345"` // Номер квартиры
 	HouseID HouseID `db:"house_id" example:"12345"`
 	Price   int     `db:"price"    example:"10000"` // Цена квартиры в у.е.
