@@ -17,8 +17,8 @@ paths:
             schema:
               type: object
               properties:
-                id:
-                  $ref: '#/components/schemas/UserId'
+                email:
+                  $ref: '#/components/schemas/Email'
                 password:
                   $ref: '#/components/schemas/Password'
       responses:
@@ -190,10 +190,16 @@ paths:
             schema:
               type: object
               required:
+                - number
                 - house_id
                 - price
-                - room
+                - rooms
               properties:
+                number:
+                  type: integer
+                  description: Номер квартиры
+                  example: 12
+                  minimum: 1
                 house_id:
                   $ref: '#/components/schemas/HouseId'
                 price:
@@ -345,6 +351,7 @@ components:
       description: Квартира
       required:
         - id
+        - number
         - house_id
         - price
         - rooms
@@ -352,6 +359,11 @@ components:
       properties:
         id:
           $ref: '#/components/schemas/FlatId'
+        number:
+          type: integer
+          description: Номер квартиры
+          example: 12
+          minimum: 1
         house_id:
           $ref: '#/components/schemas/HouseId'
         price:
