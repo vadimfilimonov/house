@@ -25,6 +25,16 @@ func (i HouseCreateInput) Validate() error {
 		return fmt.Errorf("address cannot be empty")
 	}
 
+	if err := validateMaxStringSize("address", i.Address); err != nil {
+		return err
+	}
+
+	if i.Developer != nil {
+		if err := validateMaxStringSize("developer", *i.Developer); err != nil {
+			return err
+		}
+	}
+
 	if i.Year < 0 {
 		return fmt.Errorf("year cannot be less than 0")
 	}

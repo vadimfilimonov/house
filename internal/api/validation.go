@@ -8,6 +8,7 @@ import (
 
 const (
 	minPasswordSize = 8
+	maxStringSize   = 255
 
 	userTypeClient    = "client"
 	userTypeModerator = "moderator"
@@ -16,6 +17,10 @@ const (
 var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 
 func validateEmail(email string) error {
+	if err := validateMaxStringSize("email", email); err != nil {
+		return err
+	}
+
 	if !emailRegex.MatchString(email) {
 		return fmt.Errorf("email is not valid")
 	}
@@ -34,6 +39,14 @@ func validatePassword(password string) error {
 func validateUserType(userType string) error {
 	if userType != userTypeClient && userType != userTypeModerator {
 		return fmt.Errorf("user_type is incorrect")
+	}
+
+	return nil
+}
+
+func validateMaxStringSize(field, value string) error {
+	if utf8.RuneCountInString(value) > maxStringSize {
+		return fmt.Errorf("%s cannot be longer than %d symbols", field, maxStringSize)
 	}
 
 	return nil
