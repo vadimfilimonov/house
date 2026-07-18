@@ -10,7 +10,8 @@ import (
 
 const (
 	defaultServerAddress = "localhost:8080"
-	defaultRedisAddress  = "localhost:6379"
+	defaultRedisHost     = "localhost"
+	defaultRedisPort     = "6379"
 )
 
 type Config struct {
@@ -54,7 +55,11 @@ func (c *Config) Parse() error {
 	}
 
 	if c.RedisHost == "" {
-		c.RedisHost = defaultRedisAddress
+		c.RedisHost = defaultRedisHost
+	}
+
+	if c.RedisPort == "" {
+		c.RedisPort = defaultRedisPort
 	}
 
 	return nil
