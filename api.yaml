@@ -236,8 +236,7 @@ paths:
               type: object
               required:
                 - id
-                - price
-                - room
+                - status
               properties:
                 id:
                   $ref: '#/components/schemas/FlatId'
