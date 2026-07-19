@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1550" viewBox="0 0 2400 1550">
+  <defs>
+    <marker id="arrow" markerWidth="14" markerHeight="14" refX="11" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 4 L 0 8 z" fill="#334155"/>
+    </marker>
+    <style>
+      text { font-family: Arial, Helvetica, sans-serif; fill: #111827; }
+      .title { font-size: 44px; font-weight: 700; }
+      .subtitle { font-size: 23px; fill: #475569; }
+      .section { font-size: 30px; font-weight: 700; }
+      .label { font-size: 23px; font-weight: 700; }
+      .small { font-size: 19px; fill: #334155; }
+      .tiny { font-size: 15px; fill: #475569; }
+      .code { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 17px; fill: #334155; }
+      .box { fill: #ffffff; stroke: #CBD5E1; stroke-width: 2.3; rx: 16; }
+      .api { fill: #EFF6FF; stroke: #60A5FA; }
+      .entry { fill: #F8FAFC; stroke: #94A3B8; }
+      .service { fill: #F0FDF4; stroke: #4ADE80; }
+      .table { fill: #FFFFFF; stroke: #FCA5A5; }
+      .redis { fill: #FDF2F8; stroke: #F9A8D4; }
+      .header { fill: #FEF2F2; stroke: #FCA5A5; }
+      .redisHeader { fill: #FCE7F3; stroke: #F9A8D4; }
+      .line { stroke: #334155; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #64748B; stroke-width: 2.1; fill: none; marker-end: url(#arrow); }
+      .rel { stroke: #DC2626; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #64748B; stroke-width: 2.3; stroke-dasharray: 7 7; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="2400" height="1550" fill="#F8FAFC"/>
+  <text x="70" y="75" class="title">House Service Architecture</text>
+  <text x="70" y="112" class="subtitle">API handlers, services, database tables, Redis cache, and system relationships</text>
+
+  <text x="70" y="175" class="section">Entry Point</text>
+  <rect x="60" y="200" width="520" height="150" class="box entry"/>
+  <text x="95" y="248" class="label">cmd/main.go</text>
+  <text x="95" y="286" class="small">Starts Fiber, configures JWT middleware,</text>
+  <text x="95" y="318" class="small">wires API handlers, services, Postgres, Redis.</text>
+
+  <text x="70" y="420" class="section">HTTP API and Handlers</text>
+  <rect x="60" y="445" width="720" height="850" class="box api"/>
+  <text x="95" y="492" class="label">public</text>
+  <text x="115" y="532" class="code">POST /register</text>
+  <text x="315" y="532" class="small">Register handler -> user service</text>
+  <text x="115" y="575" class="code">POST /login</text>
+  <text x="315" y="575" class="small">Login handler -> user service + auth_token</text>
+
+  <text x="95" y="650" class="label">authorized by JWT</text>
+  <text x="115" y="690" class="code">POST /house/create</text>
+  <text x="360" y="690" class="small">HouseCreate handler -> house service</text>
+  <text x="115" y="735" class="code">GET  /house/{id}</text>
+  <text x="360" y="735" class="small">HouseGet handler -> flat service</text>
+  <text x="115" y="780" class="code">POST /house/{id}/subscribe</text>
+  <text x="440" y="780" class="small">HouseSubscribe handler -> subscription service</text>
+  <text x="115" y="825" class="code">POST /flat/create</text>
+  <text x="360" y="825" class="small">FlatCreate handler -> flat + house services</text>
+  <text x="115" y="870" class="code">POST /flat/update</text>
+  <text x="360" y="870" class="small">FlatUpdate handler -> flat service</text>
+
+  <text x="95" y="950" class="label">handler responsibilities</text>
+  <text x="115" y="990" class="small">Parse JSON and path params.</text>
+  <text x="115" y="1024" class="small">Validate API input before calling services.</text>
+  <text x="115" y="1058" class="small">Check auth roles: client or moderator.</text>
+  <text x="115" y="1092" class="small">Return HTTP codes: 200, 400, 401, 403, 404, 409, 500.</text>
+
+  <text x="900" y="175" class="section">Services</text>
+  <rect x="890" y="200" width="560" height="585" class="box service"/>
+  <text x="930" y="250" class="label">user</text>
+  <text x="930" y="285" class="small">Register, login, hash password, issue tokens.</text>
+  <text x="930" y="340" class="label">auth_token</text>
+  <text x="930" y="375" class="small">Create JWT and read claims from requests.</text>
+  <text x="930" y="430" class="label">house</text>
+  <text x="930" y="465" class="small">Create houses after API validation.</text>
+  <text x="930" y="520" class="label">flat</text>
+  <text x="930" y="555" class="small">Create flats, list house flats, update moderation status.</text>
+  <text x="930" y="590" class="tiny">Status flow: created -> on moderation -> approved or declined.</text>
+  <text x="930" y="645" class="label">subscription</text>
+  <text x="930" y="680" class="small">Subscribe email to house updates.</text>
+
+  <text x="1570" y="175" class="section">Postgres and Redis</text>
+
+  <rect x="1560" y="200" width="360" height="275" class="box table"/>
+  <rect x="1560" y="200" width="360" height="52" class="header"/>
+  <text x="1585" y="234" class="label">users</text>
+  <text x="1585" y="285" class="code">id</text><text x="1735" y="285" class="tiny">UUID PK</text>
+  <text x="1585" y="323" class="code">email</text><text x="1735" y="323" class="tiny">VARCHAR(255) UNIQUE NOT NULL</text>
+  <text x="1585" y="361" class="code">password</text><text x="1735" y="361" class="tiny">VARCHAR(255) NOT NULL</text>
+  <text x="1585" y="399" class="code">user_type</text><text x="1735" y="399" class="tiny">VARCHAR(255) NOT NULL</text>
+
+  <rect x="1990" y="200" width="345" height="250" class="box redis"/>
+  <rect x="1990" y="200" width="345" height="52" class="redisHeader"/>
+  <text x="2015" y="234" class="label">Redis</text>
+  <text x="2015" y="286" class="small">Used by token store.</text>
+  <text x="2015" y="324" class="small">Keeps refresh tokens for</text>
+  <text x="2015" y="356" class="small">login sessions.</text>
+  <text x="2015" y="405" class="tiny">Configured with REDIS_HOST,</text>
+  <text x="2015" y="430" class="tiny">REDIS_PORT, REDIS_PASSWORD.</text>
+
+  <rect x="1560" y="540" width="360" height="315" class="box table"/>
+  <rect x="1560" y="540" width="360" height="52" class="header"/>
+  <text x="1585" y="574" class="label">houses</text>
+  <text x="1585" y="625" class="code">id</text><text x="1735" y="625" class="tiny">BIGINT PK IDENTITY</text>
+  <text x="1585" y="663" class="code">address</text><text x="1735" y="663" class="tiny">VARCHAR(255) NOT NULL</text>
+  <text x="1585" y="701" class="code">year</text><text x="1735" y="701" class="tiny">INT NOT NULL</text>
+  <text x="1585" y="739" class="code">developer</text><text x="1735" y="739" class="tiny">VARCHAR(255)</text>
+  <text x="1585" y="777" class="code">created_at</text><text x="1735" y="777" class="tiny">TIMESTAMP</text>
+  <text x="1585" y="815" class="code">update_at</text><text x="1735" y="815" class="tiny">TIMESTAMP</text>
+
+  <rect x="1560" y="930" width="360" height="360" class="box table"/>
+  <rect x="1560" y="930" width="360" height="52" class="header"/>
+  <text x="1585" y="964" class="label">flats</text>
+  <text x="1585" y="1015" class="code">id</text><text x="1735" y="1015" class="tiny">BIGINT PK IDENTITY</text>
+  <text x="1585" y="1053" class="code">number</text><text x="1735" y="1053" class="tiny">INT NOT NULL</text>
+  <text x="1585" y="1091" class="code">house_id</text><text x="1735" y="1091" class="tiny">BIGINT FK NOT NULL</text>
+  <text x="1585" y="1129" class="code">price</text><text x="1735" y="1129" class="tiny">INT NOT NULL</text>
+  <text x="1585" y="1167" class="code">rooms</text><text x="1735" y="1167" class="tiny">INT NOT NULL</text>
+  <text x="1585" y="1205" class="code">status</text><text x="1735" y="1205" class="tiny">flat_status NOT NULL</text>
+  <text x="1585" y="1243" class="tiny">UNIQUE(number, house_id)</text>
+
+  <rect x="1990" y="930" width="345" height="325" class="box table"/>
+  <rect x="1990" y="930" width="345" height="52" class="header"/>
+  <text x="2015" y="964" class="label">house_subscriptions</text>
+  <text x="2015" y="1015" class="code">id</text><text x="2160" y="1015" class="tiny">BIGINT PK IDENTITY</text>
+  <text x="2015" y="1053" class="code">house_id</text><text x="2160" y="1053" class="tiny">BIGINT FK NOT NULL</text>
+  <text x="2015" y="1091" class="code">email</text><text x="2160" y="1091" class="tiny">VARCHAR(255) NOT NULL</text>
+  <text x="2015" y="1129" class="code">created_at</text><text x="2160" y="1129" class="tiny">TIMESTAMP DEFAULT NOW()</text>
+  <text x="2015" y="1185" class="tiny">UNIQUE(house_id, email)</text>
+
+  <rect x="1560" y="1360" width="775" height="100" class="box table"/>
+  <text x="1585" y="1400" class="label">flat_status enum</text>
+  <text x="1585" y="1438" class="code">created | on moderation | approved | declined</text>
+
+  <path d="M 320 350 L 320 445" class="line"/>
+  <path d="M 780 760 C 835 760, 835 500, 890 500" class="line"/>
+  <path d="M 1450 285 C 1505 285, 1505 335, 1560 335" class="thin"/>
+  <path d="M 1450 465 C 1505 465, 1505 690, 1560 690" class="thin"/>
+  <path d="M 1450 555 C 1505 555, 1505 1110, 1560 1110" class="thin"/>
+  <path d="M 1450 680 C 1700 680, 1700 1055, 1990 1055" class="thin"/>
+  <path d="M 1450 250 C 1700 150, 1960 150, 2160 200" class="dash"/>
+
+  <path d="M 1740 930 L 1740 855" class="rel"/>
+  <text x="1765" y="900" class="tiny">flats.house_id -> houses.id</text>
+  <path d="M 2162 930 C 2162 760, 1920 715, 1920 680" class="rel"/>
+  <text x="1955" y="815" class="tiny">house_subscriptions.house_id -> houses.id</text>
+</svg>
