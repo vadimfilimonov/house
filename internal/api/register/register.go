@@ -1,7 +1,6 @@
 package register
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -10,11 +9,6 @@ import (
 
 	manager "github.com/vadimfilimonov/house/internal/service/user"
 )
-
-type userManager interface {
-	// Register creates a user with the requested role.
-	Register(ctx context.Context, email, password, userType string) (userID *string, err error)
-}
 
 type Register struct {
 	userManager userManager

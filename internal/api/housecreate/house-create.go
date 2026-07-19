@@ -1,7 +1,6 @@
 package housecreate
 
 import (
-	"context"
 	"fmt"
 	"log"
 
@@ -10,11 +9,6 @@ import (
 	"github.com/vadimfilimonov/house/internal/models"
 	"github.com/vadimfilimonov/house/internal/service/auth_token"
 )
-
-type houseManager interface {
-	// Create stores a new house and returns its public data.
-	Create(ctx context.Context, address string, year int, developer *string) (*models.House, error)
-}
 
 type HouseCreate struct {
 	houseManager houseManager

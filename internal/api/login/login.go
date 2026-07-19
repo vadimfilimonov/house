@@ -1,7 +1,6 @@
 package login
 
 import (
-	"context"
 	"errors"
 	"fmt"
 
@@ -10,11 +9,6 @@ import (
 	manager "github.com/vadimfilimonov/house/internal/service/user"
 	store "github.com/vadimfilimonov/house/internal/store/user"
 )
-
-type userManager interface {
-	// Login authenticates a user and returns an authorization token.
-	Login(ctx context.Context, id string, password string) (token *string, err error)
-}
 
 type Login struct {
 	userManager userManager

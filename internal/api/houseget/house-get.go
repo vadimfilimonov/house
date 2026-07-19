@@ -1,7 +1,6 @@
 package houseget
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"strconv"
@@ -11,11 +10,6 @@ import (
 	"github.com/vadimfilimonov/house/internal/models"
 	"github.com/vadimfilimonov/house/internal/service/auth_token"
 )
-
-type flatManager interface {
-	// ListByHouseID returns flats linked to the house with optional status filtering.
-	ListByHouseID(ctx context.Context, houseID int, includeAllStatuses bool) ([]models.Flat, error)
-}
 
 type HouseGet struct {
 	flatManager flatManager

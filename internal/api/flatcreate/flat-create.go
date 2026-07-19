@@ -1,21 +1,14 @@
 package flatcreate
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/vadimfilimonov/house/internal/api"
-	"github.com/vadimfilimonov/house/internal/models"
 	flatStore "github.com/vadimfilimonov/house/internal/store/flat"
 )
-
-type flatManager interface {
-	// Create stores a new flat in created status.
-	Create(ctx context.Context, number, houseID, price, rooms int) (*models.Flat, error)
-}
 
 type FlatCreate struct {
 	flatManager flatManager
