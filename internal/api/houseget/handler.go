@@ -78,7 +78,7 @@ func (h *HouseGet) Handle(c *fiber.Ctx) error {
 		return err
 	}
 
-	output := Output{Flats: make([]api.FlatOutput, 0, len(flats))}
+	output := Output{Flats: make([]FlatOutput, 0, len(flats))}
 	for _, flat := range flats {
 		output.Flats = append(output.Flats, convToResponse(flat))
 	}

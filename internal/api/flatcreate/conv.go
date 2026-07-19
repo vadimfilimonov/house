@@ -1,12 +1,9 @@
 package flatcreate
 
-import (
-	"github.com/vadimfilimonov/house/internal/api"
-	"github.com/vadimfilimonov/house/internal/models"
-)
+import "github.com/vadimfilimonov/house/internal/models"
 
-func convToResponse(flat models.Flat) api.FlatOutput {
-	return api.FlatOutput{
+func convToResponse(flat models.Flat) FlatOutput {
+	return FlatOutput{
 		ID:      flat.ID,
 		Number:  flat.Number,
 		HouseID: flat.HouseID.Int(),
