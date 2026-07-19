@@ -11,11 +11,12 @@ import (
 )
 
 type RegisterInput struct {
-	Email    string `json:"email"`     // Email пользователя
-	Password string `json:"password"`  // Пароль пользователя
-	UserType string `json:"user_type"` // Тип пользователя: client или moderator
+	Email    string `json:"email"`     // User email.
+	Password string `json:"password"`  // User password.
+	UserType string `json:"user_type"` // User type: client or moderator.
 }
 
+// Validate checks that the registration request matches API constraints.
 func (i RegisterInput) Validate() error {
 	if err := validateEmail(i.Email); err != nil {
 		return err
@@ -33,7 +34,7 @@ func (i RegisterInput) Validate() error {
 }
 
 type RegisterOutput struct {
-	UserID string `json:"user_id"` // Идентификатор созданного пользователя
+	UserID string `json:"user_id"` // Created user identifier.
 }
 
 type Register struct {

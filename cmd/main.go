@@ -13,11 +13,13 @@ import (
 	"github.com/vadimfilimonov/house/internal/service/config"
 	"github.com/vadimfilimonov/house/internal/service/flat"
 	"github.com/vadimfilimonov/house/internal/service/house"
+	"github.com/vadimfilimonov/house/internal/service/subscription"
 	"github.com/vadimfilimonov/house/internal/service/user"
 	"github.com/vadimfilimonov/house/internal/storage/pg"
 	"github.com/vadimfilimonov/house/internal/storage/redis"
 	flatStore "github.com/vadimfilimonov/house/internal/store/flat"
 	houseStore "github.com/vadimfilimonov/house/internal/store/house"
+	subscriptionStore "github.com/vadimfilimonov/house/internal/store/subscription"
 	tokenStore "github.com/vadimfilimonov/house/internal/store/token"
 	userStore "github.com/vadimfilimonov/house/internal/store/user"
 )
@@ -50,12 +52,14 @@ func main() {
 	uStore := userStore.New(database)
 	hStore := houseStore.New(database)
 	fStore := flatStore.New(database)
+	sStore := subscriptionStore.New(database)
 	tStore := tokenStore.New(redisClient)
 
 	tokenManager := auth_token.NewToken([]byte(c.JwtSecretKey))
 	userManager := user.New(uStore, tStore, tokenManager)
 	houseManager := house.New(hStore)
 	flatManager := flat.New(fStore)
+	subscriptionManager := subscription.New(sStore)
 
 	app := fiber.New()
 	app.Use(contextMiddleware(ctx))
@@ -72,7 +76,10 @@ func main() {
 		ContextKey: api.ContextKeyUser,
 	}))
 	authorizedGroup.Post("/house/create", api.NewHouseCreate(houseManager).Handle)
+	authorizedGroup.Get("/house/:id", api.NewHouseGet(flatManager).Handle)
+	authorizedGroup.Post("/house/:id/subscribe", api.NewHouseSubscribe(subscriptionManager).Handle)
 	authorizedGroup.Post("/flat/create", api.NewFlatCreate(flatManager, houseManager).Handle)
+	authorizedGroup.Post("/flat/update", api.NewFlatUpdate(flatManager).Handle)
 
 	if err := app.Listen(c.ServerAddress); err != nil {
 		log.Fatal(err)

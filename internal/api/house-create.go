@@ -15,11 +15,12 @@ type houseManager interface {
 }
 
 type HouseCreateInput struct {
-	Address   string  `json:"address"`             // Адрес дома
-	Year      int     `json:"year"`                // Год постройки дома
-	Developer *string `json:"developer,omitempty"` // Застройщик дома
+	Address   string  `json:"address"`             // House address.
+	Year      int     `json:"year"`                // House construction year.
+	Developer *string `json:"developer,omitempty"` // House developer.
 }
 
+// Validate checks that the create-house request matches API constraints.
 func (i HouseCreateInput) Validate() error {
 	if i.Address == "" {
 		return fmt.Errorf("address cannot be empty")
@@ -43,12 +44,12 @@ func (i HouseCreateInput) Validate() error {
 }
 
 type HouseCreateOutput struct {
-	ID        int     `json:"id"`                   // Идентификатор созданного дома
-	Address   string  `json:"address"`              // Адрес дома
-	Year      int     `json:"year"`                 // Год постройки дома
-	Developer *string `json:"developer,omitempty"`  // Застройщик дома
-	CreatedAt *string `json:"created_at,omitempty"` // Дата создания дома в базе
-	UpdateAt  *string `json:"update_at,omitempty"`  // Дата последнего добавления новой квартиры в дом
+	ID        int     `json:"id"`                   // Created house identifier.
+	Address   string  `json:"address"`              // House address.
+	Year      int     `json:"year"`                 // House construction year.
+	Developer *string `json:"developer,omitempty"`  // House developer.
+	CreatedAt *string `json:"created_at,omitempty"` // House creation date.
+	UpdateAt  *string `json:"update_at,omitempty"`  // Date when a flat was last added to the house.
 }
 
 type HouseCreate struct {

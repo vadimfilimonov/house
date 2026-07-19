@@ -13,15 +13,18 @@ import (
 
 type flatManager interface {
 	Create(ctx context.Context, id, houseID, price, rooms int) (*models.Flat, error)
+	ListByHouseID(ctx context.Context, houseID int, includeAllStatuses bool) ([]models.Flat, error)
+	UpdateStatus(ctx context.Context, flatID int, status models.Status) (*models.Flat, error)
 }
 
 type FlatCreateInput struct {
-	Number  int `json:"number"`   // Номер квартиры в доме
-	HouseID int `json:"house_id"` // Идентификатор дома, к которому относится квартира
-	Price   int `json:"price"`    // Цена квартиры в у.е.
-	Rooms   int `json:"rooms"`    // Количество комнат в квартире
+	Number  int `json:"number"`   // Flat number inside the house.
+	HouseID int `json:"house_id"` // House identifier linked to the flat.
+	Price   int `json:"price"`    // Flat price in conventional units.
+	Rooms   int `json:"rooms"`    // Number of rooms in the flat.
 }
 
+// Validate checks that the create-flat request matches API constraints.
 func (i FlatCreateInput) Validate() error {
 	if i.Number < 1 {
 		return fmt.Errorf("number cannot be less than 1")
@@ -40,15 +43,6 @@ func (i FlatCreateInput) Validate() error {
 	}
 
 	return nil
-}
-
-type FlatCreateOutput struct {
-	ID      int    `json:"id"`       // Идентификатор созданной квартиры
-	Number  int    `json:"number"`   // Номер квартиры в доме
-	HouseID int    `json:"house_id"` // Идентификатор дома, к которому относится квартира
-	Price   int    `json:"price"`    // Цена квартиры в у.е.
-	Rooms   int    `json:"rooms"`    // Количество комнат в квартире
-	Status  string `json:"status"`   // Статус модерации квартиры
 }
 
 type FlatCreate struct {
@@ -105,12 +99,5 @@ func (f *FlatCreate) Handle(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.JSON(FlatCreateOutput{
-		ID:      flat.ID,
-		Number:  flat.Number,
-		HouseID: flat.HouseID.Int(),
-		Price:   flat.Price,
-		Rooms:   flat.Rooms,
-		Status:  flat.Status.String(),
-	})
+	return c.JSON(newFlatOutput(*flat))
 }

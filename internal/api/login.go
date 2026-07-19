@@ -11,10 +11,11 @@ import (
 )
 
 type LoginInput struct {
-	Email    string `json:"email"`    // Email пользователя
-	Password string `json:"password"` // Пароль пользователя
+	Email    string `json:"email"`    // User email.
+	Password string `json:"password"` // User password.
 }
 
+// Validate checks that the login request matches API constraints.
 func (i LoginInput) Validate() error {
 	if err := validateEmail(i.Email); err != nil {
 		return err
@@ -28,7 +29,7 @@ func (i LoginInput) Validate() error {
 }
 
 type LoginOutput struct {
-	Token string `json:"token"` // Авторизационный токен
+	Token string `json:"token"` // Authorization token.
 }
 
 type Login struct {

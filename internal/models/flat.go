@@ -1,6 +1,6 @@
 package models
 
-type Status string // Статус квартиры
+type Status string // Flat moderation status.
 
 func (s Status) String() string {
 	return string(s)
@@ -14,10 +14,10 @@ const (
 )
 
 type Flat struct {
-	ID      int     `db:"id"       example:"123456"`  // Идентификатор квартиры
-	Number  int     `db:"number"   example:"12345"`   // Номер квартиры в доме
-	HouseID HouseID `db:"house_id" example:"12345"`   // Идентификатор дома, к которому относится квартира
-	Price   int     `db:"price"    example:"10000"`   // Цена квартиры в у.е.
-	Rooms   int     `db:"rooms"    example:"4"`       // Количество комнат в квартире
-	Status  Status  `db:"status"   example:"created"` // Статус модерации квартиры
+	ID      int     `db:"id"       example:"123456"`  // Flat identifier.
+	Number  int     `db:"number"   example:"12345"`   // Flat number inside the house.
+	HouseID HouseID `db:"house_id" example:"12345"`   // House identifier linked to the flat.
+	Price   int     `db:"price"    example:"10000"`   // Flat price in conventional units.
+	Rooms   int     `db:"rooms"    example:"4"`       // Number of rooms in the flat.
+	Status  Status  `db:"status"   example:"created"` // Flat moderation status.
 }
