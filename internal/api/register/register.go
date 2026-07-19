@@ -1,21 +1,26 @@
 package register
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/vadimfilimonov/house/internal/api"
 
 	manager "github.com/vadimfilimonov/house/internal/service/user"
 )
 
-type Register struct {
-	userManager api.UserManager
+type userManager interface {
+	// Register creates a user with the requested role.
+	Register(ctx context.Context, email, password, userType string) (userID *string, err error)
 }
 
-func New(userManager api.UserManager) *Register {
+type Register struct {
+	userManager userManager
+}
+
+func New(userManager userManager) *Register {
 	return &Register{
 		userManager: userManager,
 	}

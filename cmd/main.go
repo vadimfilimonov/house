@@ -85,7 +85,7 @@ func main() {
 	authorizedGroup.Post("/house/create", housecreate.New(houseManager).Handle)
 	authorizedGroup.Get("/house/:id", houseget.New(flatManager).Handle)
 	authorizedGroup.Post("/house/:id/subscribe", housesubscribe.New(subscriptionManager).Handle)
-	authorizedGroup.Post("/flat/create", flatcreate.New(flatManager, houseManager).Handle)
+	authorizedGroup.Post("/flat/create", flatcreate.New(flatManager).Handle)
 	authorizedGroup.Post("/flat/update", flatupdate.New(flatManager).Handle)
 
 	if err := app.Listen(c.ServerAddress); err != nil {

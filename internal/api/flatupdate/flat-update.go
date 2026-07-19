@@ -1,6 +1,7 @@
 package flatupdate
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -12,11 +13,16 @@ import (
 	flatStore "github.com/vadimfilimonov/house/internal/store/flat"
 )
 
-type FlatUpdate struct {
-	flatManager api.FlatManager
+type flatManager interface {
+	// UpdateStatus changes a flat moderation status using allowed transitions.
+	UpdateStatus(ctx context.Context, flatID int, status models.Status) (*models.Flat, error)
 }
 
-func New(flatManager api.FlatManager) *FlatUpdate {
+type FlatUpdate struct {
+	flatManager flatManager
+}
+
+func New(flatManager flatManager) *FlatUpdate {
 	return &FlatUpdate{flatManager: flatManager}
 }
 

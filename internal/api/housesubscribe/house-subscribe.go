@@ -1,6 +1,7 @@
 package housesubscribe
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -11,11 +12,16 @@ import (
 	subscriptionStore "github.com/vadimfilimonov/house/internal/store/subscription"
 )
 
-type HouseSubscribe struct {
-	subscriptionManager api.SubscriptionManager
+type subscriptionManager interface {
+	// Create subscribes an email to house updates.
+	Create(ctx context.Context, houseID int, email string) error
 }
 
-func New(subscriptionManager api.SubscriptionManager) *HouseSubscribe {
+type HouseSubscribe struct {
+	subscriptionManager subscriptionManager
+}
+
+func New(subscriptionManager subscriptionManager) *HouseSubscribe {
 	return &HouseSubscribe{subscriptionManager: subscriptionManager}
 }
 

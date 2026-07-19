@@ -1,21 +1,26 @@
 package login
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/vadimfilimonov/house/internal/api"
 
 	manager "github.com/vadimfilimonov/house/internal/service/user"
 	store "github.com/vadimfilimonov/house/internal/store/user"
 )
 
-type Login struct {
-	userManager api.UserManager
+type userManager interface {
+	// Login authenticates a user and returns an authorization token.
+	Login(ctx context.Context, id string, password string) (token *string, err error)
 }
 
-func New(userManager api.UserManager) *Login {
+type Login struct {
+	userManager userManager
+}
+
+func New(userManager userManager) *Login {
 	return &Login{
 		userManager: userManager,
 	}
