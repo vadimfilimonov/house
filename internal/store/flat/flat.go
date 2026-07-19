@@ -21,8 +21,6 @@ var (
 	defaultTimeout        = 5 * time.Second
 )
 
-const updateStatusQuery = `UPDATE flats SET status = $2 WHERE id = $1 AND status = $3 RETURNING id, number, house_id, price, rooms, status`
-
 var requiredStatusByNextStatus = map[models.Status]models.Status{
 	models.OnModerationStatus: models.CreatedStatus,
 	models.ApprovedStatus:     models.OnModerationStatus,
@@ -129,7 +127,8 @@ func (s *Store) UpdateStatus(ctx context.Context, flatID int, status models.Stat
 		return nil, ErrFlatStatusConflict
 	}
 
-	flat, err := scanFlat(s.storage.QueryRowContext(ctx, updateStatusQuery, flatID, status.String(), requiredStatus.String()))
+	query := `UPDATE flats SET status = $2 WHERE id = $1 AND status = $3 RETURNING id, number, house_id, price, rooms, status`
+	flat, err := scanFlat(s.storage.QueryRowContext(ctx, query, flatID, status.String(), requiredStatus.String()))
 	if err == nil {
 		return flat, nil
 	}
