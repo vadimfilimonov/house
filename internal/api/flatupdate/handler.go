@@ -1,6 +1,7 @@
-package housecreate
+package flatupdate
 
 import (
+	"errors"
 	"fmt"
 	"log"
 
@@ -8,19 +9,18 @@ import (
 	"github.com/vadimfilimonov/house/internal/api"
 	"github.com/vadimfilimonov/house/internal/models"
 	"github.com/vadimfilimonov/house/internal/service/auth_token"
+	flatStore "github.com/vadimfilimonov/house/internal/store/flat"
 )
 
-type HouseCreate struct {
-	houseManager houseManager
+type FlatUpdate struct {
+	flatManager flatManager
 }
 
-func New(houseManager houseManager) *HouseCreate {
-	return &HouseCreate{
-		houseManager: houseManager,
-	}
+func New(flatManager flatManager) *FlatUpdate {
+	return &FlatUpdate{flatManager: flatManager}
 }
 
-func (h *HouseCreate) Handle(c *fiber.Ctx) error {
+func (f *FlatUpdate) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	jwtPayload, err := api.JWTPayloadFromRequest(c)
@@ -43,7 +43,7 @@ func (h *HouseCreate) Handle(c *fiber.Ctx) error {
 	}
 
 	if userType != models.UserTypeModerator {
-		err := fmt.Errorf("user type \"%s\" cannot create house", userType)
+		err := fmt.Errorf("user type %q cannot update flat status", userType)
 		if sendErr := c.SendStatus(fiber.StatusForbidden); sendErr != nil {
 			log.Printf("cannot send status %d: %v", fiber.StatusForbidden, sendErr)
 		}
@@ -64,8 +64,24 @@ func (h *HouseCreate) Handle(c *fiber.Ctx) error {
 		return err
 	}
 
-	house, err := h.houseManager.Create(ctx, requestBody.Address, requestBody.Year, requestBody.Developer)
+	flat, err := f.flatManager.UpdateStatus(ctx, requestBody.ID, models.Status(requestBody.Status))
 	if err != nil {
+		if errors.Is(err, flatStore.ErrFlatNotFound) {
+			if sendErr := c.SendStatus(fiber.StatusNotFound); sendErr != nil {
+				log.Printf("cannot send status %d: %v", fiber.StatusNotFound, sendErr)
+			}
+
+			return err
+		}
+
+		if errors.Is(err, flatStore.ErrFlatStatusConflict) {
+			if sendErr := c.SendStatus(fiber.StatusConflict); sendErr != nil {
+				log.Printf("cannot send status %d: %v", fiber.StatusConflict, sendErr)
+			}
+
+			return err
+		}
+
 		if sendErr := c.SendStatus(fiber.StatusInternalServerError); sendErr != nil {
 			log.Printf("cannot send status %d: %v", fiber.StatusInternalServerError, sendErr)
 		}
@@ -73,12 +89,5 @@ func (h *HouseCreate) Handle(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.JSON(Output{
-		ID:        house.ID.Int(),
-		Address:   house.Address,
-		Year:      house.Year,
-		Developer: house.Developer,
-		CreatedAt: house.CreatedAt,
-		UpdateAt:  house.UpdateAt,
-	})
+	return c.JSON(convToResponse(*flat))
 }

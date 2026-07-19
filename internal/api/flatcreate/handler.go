@@ -62,5 +62,5 @@ func (f *FlatCreate) Handle(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.JSON(api.NewFlatOutput(*flat))
+	return c.JSON(convToResponse(*flat))
 }

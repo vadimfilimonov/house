@@ -50,5 +50,5 @@ func (h *Login) Handle(c *fiber.Ctx) error {
 
 	c.Set("Content-Type", "application/json")
 
-	return c.JSON(Output{Token: *token})
+	return c.JSON(convToResponse(*token))
 }

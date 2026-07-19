@@ -58,5 +58,5 @@ func (h *Register) Handle(c *fiber.Ctx) error {
 	}
 
 	c.Status(fiber.StatusOK)
-	return c.JSON(Output{UserID: *userID})
+	return c.JSON(convToResponse(*userID))
 }

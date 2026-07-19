@@ -1,9 +1,8 @@
-package houseget
+package housecreate
 
 import (
 	"fmt"
 	"log"
-	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/vadimfilimonov/house/internal/api"
@@ -11,15 +10,17 @@ import (
 	"github.com/vadimfilimonov/house/internal/service/auth_token"
 )
 
-type HouseGet struct {
-	flatManager flatManager
+type HouseCreate struct {
+	houseManager houseManager
 }
 
-func New(flatManager flatManager) *HouseGet {
-	return &HouseGet{flatManager: flatManager}
+func New(houseManager houseManager) *HouseCreate {
+	return &HouseCreate{
+		houseManager: houseManager,
+	}
 }
 
-func (h *HouseGet) Handle(c *fiber.Ctx) error {
+func (h *HouseCreate) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	jwtPayload, err := api.JWTPayloadFromRequest(c)
@@ -41,8 +42,8 @@ func (h *HouseGet) Handle(c *fiber.Ctx) error {
 		return err
 	}
 
-	if userType != models.UserTypeClient && userType != models.UserTypeModerator {
-		err := fmt.Errorf("user type %q cannot get house flats", userType)
+	if userType != models.UserTypeModerator {
+		err := fmt.Errorf("user type \"%s\" cannot create house", userType)
 		if sendErr := c.SendStatus(fiber.StatusForbidden); sendErr != nil {
 			log.Printf("cannot send status %d: %v", fiber.StatusForbidden, sendErr)
 		}
@@ -50,17 +51,12 @@ func (h *HouseGet) Handle(c *fiber.Ctx) error {
 		return err
 	}
 
-	id, err := strconv.Atoi(c.Params("id"))
-	if err != nil {
-		if sendErr := c.SendStatus(fiber.StatusBadRequest); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusBadRequest, sendErr)
-		}
-
-		return fmt.Errorf("house id is not valid: %w", err)
+	var requestBody Input
+	if err := c.BodyParser(&requestBody); err != nil {
+		return fmt.Errorf("body parser: %w", err)
 	}
 
-	request := Input{ID: id}
-	if err := request.Validate(); err != nil {
+	if err := requestBody.Validate(); err != nil {
 		if sendErr := c.SendStatus(fiber.StatusBadRequest); sendErr != nil {
 			log.Printf("cannot send status %d: %v", fiber.StatusBadRequest, sendErr)
 		}
@@ -68,8 +64,7 @@ func (h *HouseGet) Handle(c *fiber.Ctx) error {
 		return err
 	}
 
-	includeAllStatuses := userType == models.UserTypeModerator
-	flats, err := h.flatManager.ListByHouseID(ctx, request.ID, includeAllStatuses)
+	house, err := h.houseManager.Create(ctx, requestBody.Address, requestBody.Year, requestBody.Developer)
 	if err != nil {
 		if sendErr := c.SendStatus(fiber.StatusInternalServerError); sendErr != nil {
 			log.Printf("cannot send status %d: %v", fiber.StatusInternalServerError, sendErr)
@@ -78,10 +73,5 @@ func (h *HouseGet) Handle(c *fiber.Ctx) error {
 		return err
 	}
 
-	output := Output{Flats: make([]api.FlatOutput, 0, len(flats))}
-	for _, flat := range flats {
-		output.Flats = append(output.Flats, api.NewFlatOutput(flat))
-	}
-
-	return c.JSON(output)
+	return c.JSON(convToResponse(*house))
 }
