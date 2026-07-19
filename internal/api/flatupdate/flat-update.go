@@ -1,52 +1,29 @@
-package api
+package flatupdate
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/vadimfilimonov/house/internal/api"
 	"github.com/vadimfilimonov/house/internal/models"
 	"github.com/vadimfilimonov/house/internal/service/auth_token"
 	flatStore "github.com/vadimfilimonov/house/internal/store/flat"
 )
 
-type flatUpdateManager interface {
-	UpdateStatus(ctx context.Context, flatID int, status models.Status) (*models.Flat, error)
-}
-
-type FlatUpdateInput struct {
-	ID     int    `json:"id"`     // Flat identifier.
-	Status string `json:"status"` // New moderation status.
-}
-
-// Validate checks that the update-flat request matches moderation rules.
-func (i FlatUpdateInput) Validate() error {
-	if i.ID < 1 {
-		return fmt.Errorf("flat id cannot be less than 1")
-	}
-
-	status := models.Status(i.Status)
-	if status != models.OnModerationStatus && status != models.ApprovedStatus && status != models.DeclinedStatus {
-		return fmt.Errorf("status %q is not allowed for moderation update", i.Status)
-	}
-
-	return nil
-}
-
 type FlatUpdate struct {
-	flatManager flatUpdateManager
+	flatManager api.FlatManager
 }
 
-func NewFlatUpdate(flatManager flatUpdateManager) *FlatUpdate {
+func New(flatManager api.FlatManager) *FlatUpdate {
 	return &FlatUpdate{flatManager: flatManager}
 }
 
 func (f *FlatUpdate) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	jwtPayload, err := jwtPayloadFromRequest(c)
+	jwtPayload, err := api.JWTPayloadFromRequest(c)
 	if err != nil {
 		if sendErr := c.SendStatus(fiber.StatusUnauthorized); sendErr != nil {
 			log.Printf("cannot send status %d: %v", fiber.StatusUnauthorized, sendErr)
@@ -74,7 +51,7 @@ func (f *FlatUpdate) Handle(c *fiber.Ctx) error {
 		return err
 	}
 
-	var requestBody FlatUpdateInput
+	var requestBody Input
 	if err := c.BodyParser(&requestBody); err != nil {
 		return fmt.Errorf("body parser: %w", err)
 	}
@@ -112,5 +89,5 @@ func (f *FlatUpdate) Handle(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.JSON(newFlatOutput(*flat))
+	return c.JSON(api.NewFlatOutput(*flat))
 }

@@ -1,56 +1,21 @@
-package api
+package flatcreate
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/vadimfilimonov/house/internal/models"
+	"github.com/vadimfilimonov/house/internal/api"
 	flatStore "github.com/vadimfilimonov/house/internal/store/flat"
 )
 
-type flatManager interface {
-	Create(ctx context.Context, id, houseID, price, rooms int) (*models.Flat, error)
-	ListByHouseID(ctx context.Context, houseID int, includeAllStatuses bool) ([]models.Flat, error)
-	UpdateStatus(ctx context.Context, flatID int, status models.Status) (*models.Flat, error)
-}
-
-type FlatCreateInput struct {
-	Number  int `json:"number"`   // Flat number inside the house.
-	HouseID int `json:"house_id"` // House identifier linked to the flat.
-	Price   int `json:"price"`    // Flat price in conventional units.
-	Rooms   int `json:"rooms"`    // Number of rooms in the flat.
-}
-
-// Validate checks that the create-flat request matches API constraints.
-func (i FlatCreateInput) Validate() error {
-	if i.Number < 1 {
-		return fmt.Errorf("number cannot be less than 1")
-	}
-
-	if i.HouseID < 1 {
-		return fmt.Errorf("house_id cannot be less than 1")
-	}
-
-	if i.Price < 0 {
-		return fmt.Errorf("price cannot be less than 0")
-	}
-
-	if i.Rooms < 1 {
-		return fmt.Errorf("rooms cannot be less than 1")
-	}
-
-	return nil
-}
-
 type FlatCreate struct {
-	flatManager  flatManager
-	houseManager houseManager
+	flatManager  api.FlatManager
+	houseManager api.HouseManager
 }
 
-func NewFlatCreate(flatManager flatManager, houseManager houseManager) *FlatCreate {
+func New(flatManager api.FlatManager, houseManager api.HouseManager) *FlatCreate {
 	return &FlatCreate{
 		flatManager:  flatManager,
 		houseManager: houseManager,
@@ -60,7 +25,7 @@ func NewFlatCreate(flatManager flatManager, houseManager houseManager) *FlatCrea
 func (f *FlatCreate) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	_, err := jwtPayloadFromRequest(c)
+	_, err := api.JWTPayloadFromRequest(c)
 	if err != nil {
 		if sendErr := c.SendStatus(fiber.StatusUnauthorized); sendErr != nil {
 			log.Printf("cannot send status %d: %v", fiber.StatusUnauthorized, sendErr)
@@ -69,7 +34,7 @@ func (f *FlatCreate) Handle(c *fiber.Ctx) error {
 		return err
 	}
 
-	var requestBody FlatCreateInput
+	var requestBody Input
 	if err := c.BodyParser(&requestBody); err != nil {
 		return fmt.Errorf("body parser: %w", err)
 	}
@@ -99,5 +64,5 @@ func (f *FlatCreate) Handle(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.JSON(newFlatOutput(*flat))
+	return c.JSON(api.NewFlatOutput(*flat))
 }

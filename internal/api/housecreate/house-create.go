@@ -1,62 +1,20 @@
-package api
+package housecreate
 
 import (
-	"context"
 	"fmt"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/vadimfilimonov/house/internal/api"
 	"github.com/vadimfilimonov/house/internal/models"
 	"github.com/vadimfilimonov/house/internal/service/auth_token"
 )
 
-type houseManager interface {
-	Create(ctx context.Context, address string, year int, developer *string) (*models.House, error)
-}
-
-type HouseCreateInput struct {
-	Address   string  `json:"address"`             // House address.
-	Year      int     `json:"year"`                // House construction year.
-	Developer *string `json:"developer,omitempty"` // House developer.
-}
-
-// Validate checks that the create-house request matches API constraints.
-func (i HouseCreateInput) Validate() error {
-	if i.Address == "" {
-		return fmt.Errorf("address cannot be empty")
-	}
-
-	if err := validateMaxStringSize("address", i.Address); err != nil {
-		return err
-	}
-
-	if i.Developer != nil {
-		if err := validateMaxStringSize("developer", *i.Developer); err != nil {
-			return err
-		}
-	}
-
-	if i.Year < 0 {
-		return fmt.Errorf("year cannot be less than 0")
-	}
-
-	return nil
-}
-
-type HouseCreateOutput struct {
-	ID        int     `json:"id"`                   // Created house identifier.
-	Address   string  `json:"address"`              // House address.
-	Year      int     `json:"year"`                 // House construction year.
-	Developer *string `json:"developer,omitempty"`  // House developer.
-	CreatedAt *string `json:"created_at,omitempty"` // House creation date.
-	UpdateAt  *string `json:"update_at,omitempty"`  // Date when a flat was last added to the house.
-}
-
 type HouseCreate struct {
-	houseManager houseManager
+	houseManager api.HouseManager
 }
 
-func NewHouseCreate(houseManager houseManager) *HouseCreate {
+func New(houseManager api.HouseManager) *HouseCreate {
 	return &HouseCreate{
 		houseManager: houseManager,
 	}
@@ -65,7 +23,7 @@ func NewHouseCreate(houseManager houseManager) *HouseCreate {
 func (h *HouseCreate) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	jwtPayload, err := jwtPayloadFromRequest(c)
+	jwtPayload, err := api.JWTPayloadFromRequest(c)
 	if err != nil {
 		if sendErr := c.SendStatus(fiber.StatusUnauthorized); sendErr != nil {
 			log.Printf("cannot send status %d: %v", fiber.StatusUnauthorized, sendErr)
@@ -93,7 +51,7 @@ func (h *HouseCreate) Handle(c *fiber.Ctx) error {
 		return err
 	}
 
-	var requestBody HouseCreateInput
+	var requestBody Input
 	if err := c.BodyParser(&requestBody); err != nil {
 		return fmt.Errorf("body parser: %w", err)
 	}
@@ -115,7 +73,7 @@ func (h *HouseCreate) Handle(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.JSON(HouseCreateOutput{
+	return c.JSON(Output{
 		ID:        house.ID.Int(),
 		Address:   house.Address,
 		Year:      house.Year,

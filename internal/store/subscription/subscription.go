@@ -9,6 +9,7 @@ import (
 	"github.com/lib/pq"
 
 	"github.com/vadimfilimonov/house/internal/storage/pg"
+	"github.com/vadimfilimonov/house/internal/store/pgerr"
 )
 
 var (
@@ -34,9 +35,9 @@ func (s *Store) Add(ctx context.Context, houseID int, email string) error {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
 			switch pqErr.Code {
-			case "23503":
+			case pgerr.ForeignKeyViolation:
 				return ErrHouseNotFound
-			case "23505":
+			case pgerr.UniqueViolation:
 				return ErrSubscriptionAlreadyExists
 			}
 		}

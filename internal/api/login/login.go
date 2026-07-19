@@ -1,42 +1,21 @@
-package api
+package login
 
 import (
 	"errors"
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/vadimfilimonov/house/internal/api"
 
 	manager "github.com/vadimfilimonov/house/internal/service/user"
 	store "github.com/vadimfilimonov/house/internal/store/user"
 )
 
-type LoginInput struct {
-	Email    string `json:"email"`    // User email.
-	Password string `json:"password"` // User password.
-}
-
-// Validate checks that the login request matches API constraints.
-func (i LoginInput) Validate() error {
-	if err := validateEmail(i.Email); err != nil {
-		return err
-	}
-
-	if err := validatePassword(i.Password); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-type LoginOutput struct {
-	Token string `json:"token"` // Authorization token.
-}
-
 type Login struct {
-	userManager userManager
+	userManager api.UserManager
 }
 
-func NewLogin(userManager userManager) *Login {
+func New(userManager api.UserManager) *Login {
 	return &Login{
 		userManager: userManager,
 	}
@@ -45,7 +24,7 @@ func NewLogin(userManager userManager) *Login {
 func (h *Login) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	var requestBody LoginInput
+	var requestBody Input
 	if err := c.BodyParser(&requestBody); err != nil {
 		return fmt.Errorf("body parser: %w", err)
 	}
@@ -72,5 +51,5 @@ func (h *Login) Handle(c *fiber.Ctx) error {
 
 	c.Set("Content-Type", "application/json")
 
-	return c.JSON(LoginOutput{Token: *token})
+	return c.JSON(Output{Token: *token})
 }

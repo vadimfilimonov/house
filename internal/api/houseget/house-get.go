@@ -1,49 +1,28 @@
-package api
+package houseget
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/vadimfilimonov/house/internal/api"
 	"github.com/vadimfilimonov/house/internal/models"
 	"github.com/vadimfilimonov/house/internal/service/auth_token"
 )
 
-type houseFlatManager interface {
-	ListByHouseID(ctx context.Context, houseID int, includeAllStatuses bool) ([]models.Flat, error)
-}
-
-type HouseGetInput struct {
-	ID int // House identifier from the path.
-}
-
-// Validate checks that the house-list request matches API constraints.
-func (i HouseGetInput) Validate() error {
-	if i.ID < 1 {
-		return fmt.Errorf("house id cannot be less than 1")
-	}
-
-	return nil
-}
-
-type HouseGetOutput struct {
-	Flats []FlatOutput `json:"flats"` // Flats linked to the requested house.
-}
-
 type HouseGet struct {
-	flatManager houseFlatManager
+	flatManager api.FlatManager
 }
 
-func NewHouseGet(flatManager houseFlatManager) *HouseGet {
+func New(flatManager api.FlatManager) *HouseGet {
 	return &HouseGet{flatManager: flatManager}
 }
 
 func (h *HouseGet) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	jwtPayload, err := jwtPayloadFromRequest(c)
+	jwtPayload, err := api.JWTPayloadFromRequest(c)
 	if err != nil {
 		if sendErr := c.SendStatus(fiber.StatusUnauthorized); sendErr != nil {
 			log.Printf("cannot send status %d: %v", fiber.StatusUnauthorized, sendErr)
@@ -80,7 +59,7 @@ func (h *HouseGet) Handle(c *fiber.Ctx) error {
 		return fmt.Errorf("house id is not valid: %w", err)
 	}
 
-	request := HouseGetInput{ID: id}
+	request := Input{ID: id}
 	if err := request.Validate(); err != nil {
 		if sendErr := c.SendStatus(fiber.StatusBadRequest); sendErr != nil {
 			log.Printf("cannot send status %d: %v", fiber.StatusBadRequest, sendErr)
@@ -99,9 +78,9 @@ func (h *HouseGet) Handle(c *fiber.Ctx) error {
 		return err
 	}
 
-	output := HouseGetOutput{Flats: make([]FlatOutput, 0, len(flats))}
+	output := Output{Flats: make([]api.FlatOutput, 0, len(flats))}
 	for _, flat := range flats {
-		output.Flats = append(output.Flats, newFlatOutput(flat))
+		output.Flats = append(output.Flats, api.NewFlatOutput(flat))
 	}
 
 	return c.JSON(output)

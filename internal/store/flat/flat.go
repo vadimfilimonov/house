@@ -11,15 +11,23 @@ import (
 
 	"github.com/vadimfilimonov/house/internal/models"
 	"github.com/vadimfilimonov/house/internal/storage/pg"
+	"github.com/vadimfilimonov/house/internal/store/pgerr"
 )
 
 var (
 	ErrFlatAlreadyExists  = errors.New("flat already exists")
 	ErrFlatNotFound       = errors.New("flat is not found")
 	ErrFlatStatusConflict = errors.New("flat status transition conflict")
-	ErrHouseNotAdded      = errors.New("house is not added")
 	defaultTimeout        = 5 * time.Second
 )
+
+const updateStatusQuery = `UPDATE flats SET status = $2 WHERE id = $1 AND status = $3 RETURNING id, number, house_id, price, rooms, status`
+
+var requiredStatusByNextStatus = map[models.Status]models.Status{
+	models.OnModerationStatus: models.CreatedStatus,
+	models.ApprovedStatus:     models.OnModerationStatus,
+	models.DeclinedStatus:     models.OnModerationStatus,
+}
 
 type Store struct {
 	storage *pg.Storage
@@ -52,7 +60,7 @@ func (s *Store) Add(ctx context.Context, number, houseID, price, rooms int) (*mo
 	var flatID int
 	if err = tx.QueryRowContext(ctx, flatsQuery, number, houseID, price, rooms, models.CreatedStatus).Scan(&flatID); err != nil {
 		var pqErr *pq.Error
-		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+		if errors.As(err, &pqErr) && pqErr.Code == pgerr.UniqueViolation {
 			return nil, ErrFlatAlreadyExists
 		}
 
@@ -116,12 +124,12 @@ func (s *Store) UpdateStatus(ctx context.Context, flatID int, status models.Stat
 	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
 	defer cancel()
 
-	query := buildUpdateStatusQuery(status)
-	if query == "" {
+	requiredStatus, ok := requiredStatusByNextStatus[status]
+	if !ok {
 		return nil, ErrFlatStatusConflict
 	}
 
-	flat, err := scanFlat(s.storage.QueryRowContext(ctx, query, flatID, status))
+	flat, err := scanFlat(s.storage.QueryRowContext(ctx, updateStatusQuery, flatID, status.String(), requiredStatus.String()))
 	if err == nil {
 		return flat, nil
 	}
@@ -151,17 +159,6 @@ func (s *Store) exists(ctx context.Context, flatID int) (bool, error) {
 	}
 
 	return exists, nil
-}
-
-func buildUpdateStatusQuery(status models.Status) string {
-	switch status {
-	case models.OnModerationStatus:
-		return `UPDATE flats SET status = $2 WHERE id = $1 AND status = 'created' RETURNING id, number, house_id, price, rooms, status`
-	case models.ApprovedStatus, models.DeclinedStatus:
-		return `UPDATE flats SET status = $2 WHERE id = $1 AND status = 'on moderation' RETURNING id, number, house_id, price, rooms, status`
-	default:
-		return ""
-	}
 }
 
 type flatScanner interface {

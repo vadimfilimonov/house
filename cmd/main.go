@@ -9,6 +9,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/vadimfilimonov/house/internal/api"
+	"github.com/vadimfilimonov/house/internal/api/flatcreate"
+	"github.com/vadimfilimonov/house/internal/api/flatupdate"
+	"github.com/vadimfilimonov/house/internal/api/housecreate"
+	"github.com/vadimfilimonov/house/internal/api/houseget"
+	"github.com/vadimfilimonov/house/internal/api/housesubscribe"
+	"github.com/vadimfilimonov/house/internal/api/login"
+	"github.com/vadimfilimonov/house/internal/api/register"
 	"github.com/vadimfilimonov/house/internal/service/auth_token"
 	"github.com/vadimfilimonov/house/internal/service/config"
 	"github.com/vadimfilimonov/house/internal/service/flat"
@@ -65,8 +72,8 @@ func main() {
 	app.Use(contextMiddleware(ctx))
 
 	publicGroup := app.Group("")
-	publicGroup.Post("/login", api.NewLogin(userManager).Handle)
-	publicGroup.Post("/register", api.NewRegister(userManager).Handle)
+	publicGroup.Post("/login", login.New(userManager).Handle)
+	publicGroup.Post("/register", register.New(userManager).Handle)
 
 	authorizedGroup := app.Group("")
 	authorizedGroup.Use(jwtware.New(jwtware.Config{
@@ -75,11 +82,11 @@ func main() {
 		},
 		ContextKey: api.ContextKeyUser,
 	}))
-	authorizedGroup.Post("/house/create", api.NewHouseCreate(houseManager).Handle)
-	authorizedGroup.Get("/house/:id", api.NewHouseGet(flatManager).Handle)
-	authorizedGroup.Post("/house/:id/subscribe", api.NewHouseSubscribe(subscriptionManager).Handle)
-	authorizedGroup.Post("/flat/create", api.NewFlatCreate(flatManager, houseManager).Handle)
-	authorizedGroup.Post("/flat/update", api.NewFlatUpdate(flatManager).Handle)
+	authorizedGroup.Post("/house/create", housecreate.New(houseManager).Handle)
+	authorizedGroup.Get("/house/:id", houseget.New(flatManager).Handle)
+	authorizedGroup.Post("/house/:id/subscribe", housesubscribe.New(subscriptionManager).Handle)
+	authorizedGroup.Post("/flat/create", flatcreate.New(flatManager, houseManager).Handle)
+	authorizedGroup.Post("/flat/update", flatupdate.New(flatManager).Handle)
 
 	if err := app.Listen(c.ServerAddress); err != nil {
 		log.Fatal(err)

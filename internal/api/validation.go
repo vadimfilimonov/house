@@ -16,8 +16,9 @@ const (
 
 var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 
-func validateEmail(email string) error {
-	if err := validateMaxStringSize("email", email); err != nil {
+// ValidateEmail checks that an email matches API constraints.
+func ValidateEmail(email string) error {
+	if err := ValidateMaxStringSize("email", email); err != nil {
 		return err
 	}
 
@@ -28,7 +29,8 @@ func validateEmail(email string) error {
 	return nil
 }
 
-func validatePassword(password string) error {
+// ValidatePassword checks that a password matches API constraints.
+func ValidatePassword(password string) error {
 	if utf8.RuneCountInString(password) < minPasswordSize {
 		return fmt.Errorf("password is too short, use min %d symbols", minPasswordSize)
 	}
@@ -36,7 +38,8 @@ func validatePassword(password string) error {
 	return nil
 }
 
-func validateUserType(userType string) error {
+// ValidateUserType checks that a user type is supported by the API.
+func ValidateUserType(userType string) error {
 	if userType != userTypeClient && userType != userTypeModerator {
 		return fmt.Errorf("user_type is incorrect")
 	}
@@ -44,7 +47,8 @@ func validateUserType(userType string) error {
 	return nil
 }
 
-func validateMaxStringSize(field, value string) error {
+// ValidateMaxStringSize checks that a string field fits into database limits.
+func ValidateMaxStringSize(field, value string) error {
 	if utf8.RuneCountInString(value) > maxStringSize {
 		return fmt.Errorf("%s cannot be longer than %d symbols", field, maxStringSize)
 	}

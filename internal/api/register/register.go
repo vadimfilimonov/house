@@ -1,4 +1,4 @@
-package api
+package register
 
 import (
 	"errors"
@@ -6,42 +6,16 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/vadimfilimonov/house/internal/api"
 
 	manager "github.com/vadimfilimonov/house/internal/service/user"
 )
 
-type RegisterInput struct {
-	Email    string `json:"email"`     // User email.
-	Password string `json:"password"`  // User password.
-	UserType string `json:"user_type"` // User type: client or moderator.
-}
-
-// Validate checks that the registration request matches API constraints.
-func (i RegisterInput) Validate() error {
-	if err := validateEmail(i.Email); err != nil {
-		return err
-	}
-
-	if err := validatePassword(i.Password); err != nil {
-		return err
-	}
-
-	if err := validateUserType(i.UserType); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-type RegisterOutput struct {
-	UserID string `json:"user_id"` // Created user identifier.
-}
-
 type Register struct {
-	userManager userManager
+	userManager api.UserManager
 }
 
-func NewRegister(userManager userManager) *Register {
+func New(userManager api.UserManager) *Register {
 	return &Register{
 		userManager: userManager,
 	}
@@ -50,7 +24,7 @@ func NewRegister(userManager userManager) *Register {
 func (h *Register) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	var requestBody RegisterInput
+	var requestBody Input
 	if err := c.BodyParser(&requestBody); err != nil {
 		return fmt.Errorf("body parser: %w", err)
 	}
@@ -85,5 +59,5 @@ func (h *Register) Handle(c *fiber.Ctx) error {
 	}
 
 	c.Status(fiber.StatusOK)
-	return c.JSON(RegisterOutput{UserID: *userID})
+	return c.JSON(Output{UserID: *userID})
 }

@@ -1,50 +1,28 @@
-package api
+package housesubscribe
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"log"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/vadimfilimonov/house/internal/api"
 	subscriptionStore "github.com/vadimfilimonov/house/internal/store/subscription"
 )
 
-type subscriptionManager interface {
-	Create(ctx context.Context, houseID int, email string) error
-}
-
-type HouseSubscribeInput struct {
-	HouseID int    // House identifier from the path.
-	Email   string `json:"email"` // Email that receives house updates.
-}
-
-// Validate checks that the subscription request matches API constraints.
-func (i HouseSubscribeInput) Validate() error {
-	if i.HouseID < 1 {
-		return fmt.Errorf("house id cannot be less than 1")
-	}
-
-	if err := validateEmail(i.Email); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 type HouseSubscribe struct {
-	subscriptionManager subscriptionManager
+	subscriptionManager api.SubscriptionManager
 }
 
-func NewHouseSubscribe(subscriptionManager subscriptionManager) *HouseSubscribe {
+func New(subscriptionManager api.SubscriptionManager) *HouseSubscribe {
 	return &HouseSubscribe{subscriptionManager: subscriptionManager}
 }
 
 func (h *HouseSubscribe) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	if _, err := jwtPayloadFromRequest(c); err != nil {
+	if _, err := api.JWTPayloadFromRequest(c); err != nil {
 		if sendErr := c.SendStatus(fiber.StatusUnauthorized); sendErr != nil {
 			log.Printf("cannot send status %d: %v", fiber.StatusUnauthorized, sendErr)
 		}
@@ -61,7 +39,7 @@ func (h *HouseSubscribe) Handle(c *fiber.Ctx) error {
 		return fmt.Errorf("house id is not valid: %w", err)
 	}
 
-	var requestBody HouseSubscribeInput
+	var requestBody Input
 	if err := c.BodyParser(&requestBody); err != nil {
 		return fmt.Errorf("body parser: %w", err)
 	}
