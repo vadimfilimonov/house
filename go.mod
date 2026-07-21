@@ -5,7 +5,7 @@ go 1.25
 require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/gofiber/contrib/jwt v1.0.10
-	github.com/gofiber/fiber/v2 v2.52.9
+	github.com/gofiber/fiber/v2 v2.52.14
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/golang-migrate/migrate/v4 v4.18.1
 	github.com/google/uuid v1.6.0
