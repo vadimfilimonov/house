@@ -1,6 +1,6 @@
 module github.com/vadimfilimonov/house
 
-go 1.25
+go 1.25.0
 
 require (
 	github.com/caarlos0/env/v6 v6.10.1
@@ -12,7 +12,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
 	github.com/redis/go-redis/v9 v9.7.3
-	golang.org/x/crypto v0.35.0
+	golang.org/x/crypto v0.52.0
 )
 
 require (
@@ -31,5 +31,5 @@ require (
 	github.com/valyala/fasthttp v1.51.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
-	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
 )
