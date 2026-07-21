@@ -3,7 +3,6 @@ package housesubscribe
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -23,20 +22,12 @@ func (h *Handler) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	if _, err := api.JWTPayloadFromRequest(c); err != nil {
-		if sendErr := c.SendStatus(fiber.StatusUnauthorized); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusUnauthorized, sendErr)
-		}
-
-		return err
+		return c.Status(fiber.StatusUnauthorized).SendString(err.Error())
 	}
 
 	houseID, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		if sendErr := c.SendStatus(fiber.StatusBadRequest); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusBadRequest, sendErr)
-		}
-
-		return fmt.Errorf("house id is not valid: %w", err)
+		return c.Status(fiber.StatusBadRequest).SendString(fmt.Errorf("house id is not valid: %w", err).Error())
 	}
 
 	var requestBody Input
@@ -46,35 +37,19 @@ func (h *Handler) Handle(c *fiber.Ctx) error {
 	requestBody.HouseID = houseID
 
 	if err := requestBody.Validate(); err != nil {
-		if sendErr := c.SendStatus(fiber.StatusBadRequest); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusBadRequest, sendErr)
-		}
-
-		return err
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
 	if err := h.subscriptionManager.Create(ctx, requestBody.HouseID, requestBody.Email); err != nil {
 		if errors.Is(err, subscriptionStore.ErrHouseNotFound) {
-			if sendErr := c.SendStatus(fiber.StatusNotFound); sendErr != nil {
-				log.Printf("cannot send status %d: %v", fiber.StatusNotFound, sendErr)
-			}
-
-			return err
+			return c.Status(fiber.StatusNotFound).SendString(err.Error())
 		}
 
 		if errors.Is(err, subscriptionStore.ErrSubscriptionAlreadyExists) {
-			if sendErr := c.SendStatus(fiber.StatusConflict); sendErr != nil {
-				log.Printf("cannot send status %d: %v", fiber.StatusConflict, sendErr)
-			}
-
-			return err
+			return c.Status(fiber.StatusConflict).SendString(err.Error())
 		}
 
-		if sendErr := c.SendStatus(fiber.StatusInternalServerError); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusInternalServerError, sendErr)
-		}
-
-		return err
+		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
 
 	return c.SendStatus(fiber.StatusOK)

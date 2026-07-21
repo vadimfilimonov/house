@@ -3,7 +3,6 @@ package flatcreate
 import (
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/vadimfilimonov/house/internal/api"
@@ -25,11 +24,7 @@ func (h *Handler) Handle(c *fiber.Ctx) error {
 
 	_, err := api.JWTPayloadFromRequest(c)
 	if err != nil {
-		if sendErr := c.SendStatus(fiber.StatusUnauthorized); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusUnauthorized, sendErr)
-		}
-
-		return err
+		return c.Status(fiber.StatusUnauthorized).SendString(err.Error())
 	}
 
 	var requestBody Input
@@ -38,28 +33,16 @@ func (h *Handler) Handle(c *fiber.Ctx) error {
 	}
 
 	if err := requestBody.Validate(); err != nil {
-		if sendErr := c.SendStatus(fiber.StatusBadRequest); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusBadRequest, sendErr)
-		}
-
-		return err
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
 	flat, err := h.flatManager.Create(ctx, requestBody.Number, requestBody.HouseID, requestBody.Price, requestBody.Rooms)
 	if err != nil {
 		if errors.Is(err, flatStore.ErrFlatAlreadyExists) {
-			if sendErr := c.SendStatus(fiber.StatusConflict); sendErr != nil {
-				log.Printf("cannot send status %d: %v", fiber.StatusConflict, sendErr)
-			}
-
-			return err
+			return c.Status(fiber.StatusConflict).SendString(err.Error())
 		}
 
-		if sendErr := c.SendStatus(fiber.StatusInternalServerError); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusInternalServerError, sendErr)
-		}
-
-		return err
+		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
 
 	return c.JSON(convToResponse(*flat))

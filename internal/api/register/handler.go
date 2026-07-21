@@ -3,7 +3,6 @@ package register
 import (
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -29,32 +28,20 @@ func (h *Handler) Handle(c *fiber.Ctx) error {
 	}
 
 	if err := requestBody.Validate(); err != nil {
-		if sendErr := c.SendStatus(fiber.StatusBadRequest); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusBadRequest, sendErr)
-		}
-
-		return err
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
 	userID, err := h.userManager.Register(ctx, requestBody.Email, requestBody.Password, requestBody.UserType)
 	if err != nil {
 		if errors.Is(err, manager.ErrIncorrectInput) {
-			if sendErr := c.SendStatus(fiber.StatusBadRequest); sendErr != nil {
-				log.Printf("cannot send status %d: %v", fiber.StatusBadRequest, sendErr)
-			}
-
-			return err
+			return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 		}
 
 		return err
 	}
 
 	if userID == nil {
-		if sendErr := c.SendStatus(fiber.StatusBadRequest); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusBadRequest, sendErr)
-		}
-
-		return fmt.Errorf("userID is empty")
+		return c.Status(fiber.StatusBadRequest).SendString("userID is empty")
 	}
 
 	c.Status(fiber.StatusOK)

@@ -3,7 +3,6 @@ package flatupdate
 import (
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/vadimfilimonov/house/internal/api"
@@ -25,30 +24,18 @@ func (h *Handler) Handle(c *fiber.Ctx) error {
 
 	jwtPayload, err := api.JWTPayloadFromRequest(c)
 	if err != nil {
-		if sendErr := c.SendStatus(fiber.StatusUnauthorized); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusUnauthorized, sendErr)
-		}
-
-		return err
+		return c.Status(fiber.StatusUnauthorized).SendString(err.Error())
 	}
 
 	userType, ok := jwtPayload[auth_token.ClaimsKeyUserType].(string)
 	if !ok {
 		err := fmt.Errorf("cannot get user type")
-		if sendErr := c.SendStatus(fiber.StatusInternalServerError); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusInternalServerError, sendErr)
-		}
-
-		return err
+		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
 
 	if userType != models.UserTypeModerator {
 		err := fmt.Errorf("user type %q cannot update flat status", userType)
-		if sendErr := c.SendStatus(fiber.StatusForbidden); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusForbidden, sendErr)
-		}
-
-		return err
+		return c.Status(fiber.StatusForbidden).SendString(err.Error())
 	}
 
 	var requestBody Input
@@ -57,36 +44,20 @@ func (h *Handler) Handle(c *fiber.Ctx) error {
 	}
 
 	if err := requestBody.Validate(); err != nil {
-		if sendErr := c.SendStatus(fiber.StatusBadRequest); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusBadRequest, sendErr)
-		}
-
-		return err
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
 	flat, err := h.flatManager.UpdateStatus(ctx, requestBody.ID, models.Status(requestBody.Status))
 	if err != nil {
 		if errors.Is(err, flatStore.ErrFlatNotFound) {
-			if sendErr := c.SendStatus(fiber.StatusNotFound); sendErr != nil {
-				log.Printf("cannot send status %d: %v", fiber.StatusNotFound, sendErr)
-			}
-
-			return err
+			return c.Status(fiber.StatusNotFound).SendString(err.Error())
 		}
 
 		if errors.Is(err, flatStore.ErrFlatStatusConflict) {
-			if sendErr := c.SendStatus(fiber.StatusConflict); sendErr != nil {
-				log.Printf("cannot send status %d: %v", fiber.StatusConflict, sendErr)
-			}
-
-			return err
+			return c.Status(fiber.StatusConflict).SendString(err.Error())
 		}
 
-		if sendErr := c.SendStatus(fiber.StatusInternalServerError); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusInternalServerError, sendErr)
-		}
-
-		return err
+		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
 
 	return c.JSON(convToResponse(*flat))

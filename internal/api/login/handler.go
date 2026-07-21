@@ -29,20 +29,17 @@ func (h *Handler) Handle(c *fiber.Ctx) error {
 	}
 
 	if err := requestBody.Validate(); err != nil {
-		c.Status(fiber.StatusBadRequest)
-		return err
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
 	token, err := h.userManager.Login(ctx, requestBody.Email, requestBody.Password)
 	if err != nil {
 		if errors.Is(err, store.ErrUserNotFound) {
-			c.Status(fiber.StatusNotFound)
-			return err
+			return c.Status(fiber.StatusNotFound).SendString(err.Error())
 		}
 
 		if errors.Is(err, manager.ErrWrongPassword) {
-			c.Status(fiber.StatusBadRequest)
-			return err
+			return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 		}
 
 		return err

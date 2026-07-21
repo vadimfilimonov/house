@@ -2,7 +2,6 @@ package houseget
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -24,58 +23,34 @@ func (h *Handler) Handle(c *fiber.Ctx) error {
 
 	jwtPayload, err := api.JWTPayloadFromRequest(c)
 	if err != nil {
-		if sendErr := c.SendStatus(fiber.StatusUnauthorized); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusUnauthorized, sendErr)
-		}
-
-		return err
+		return c.Status(fiber.StatusUnauthorized).SendString(err.Error())
 	}
 
 	userType, ok := jwtPayload[auth_token.ClaimsKeyUserType].(string)
 	if !ok {
 		err := fmt.Errorf("cannot get user type")
-		if sendErr := c.SendStatus(fiber.StatusInternalServerError); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusInternalServerError, sendErr)
-		}
-
-		return err
+		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
 
 	if userType != models.UserTypeClient && userType != models.UserTypeModerator {
 		err := fmt.Errorf("user type %q cannot get house flats", userType)
-		if sendErr := c.SendStatus(fiber.StatusForbidden); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusForbidden, sendErr)
-		}
-
-		return err
+		return c.Status(fiber.StatusForbidden).SendString(err.Error())
 	}
 
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		if sendErr := c.SendStatus(fiber.StatusBadRequest); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusBadRequest, sendErr)
-		}
-
-		return fmt.Errorf("house id is not valid: %w", err)
+		return c.Status(fiber.StatusBadRequest).SendString(fmt.Errorf("house id is not valid: %w", err).Error())
 	}
 
 	request := Input{ID: id}
 	if err := request.Validate(); err != nil {
-		if sendErr := c.SendStatus(fiber.StatusBadRequest); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusBadRequest, sendErr)
-		}
-
-		return err
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
 	includeAllStatuses := userType == models.UserTypeModerator
 	flats, err := h.flatManager.ListByHouseID(ctx, request.ID, includeAllStatuses)
 	if err != nil {
-		if sendErr := c.SendStatus(fiber.StatusInternalServerError); sendErr != nil {
-			log.Printf("cannot send status %d: %v", fiber.StatusInternalServerError, sendErr)
-		}
-
-		return err
+		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
 
 	output := Output{Flats: make([]FlatOutput, 0, len(flats))}
