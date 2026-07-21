@@ -84,12 +84,12 @@
   <rect x="1055" y="287" width="135" height="25" class="opBg"/>
   <text x="1065" y="306" class="op">INSERT users</text>
   <path d="M1660 326 L2765 326" class="line"/>
-  <path d="M1015 471 C 1090 471, 1110 424, 1190 424" class="dataLine"/>
-  <rect x="1055" y="433" width="135" height="25" class="opBg"/>
-  <text x="1065" y="452" class="op">SELECT users</text>
-  <path d="M1015 491 C 1300 535, 1570 430, 1850 430" class="dataLine"/>
-  <rect x="1435" y="494" width="165" height="25" class="opBg"/>
-  <text x="1445" y="513" class="op">GET / SET token</text>
+  <path d="M1015 471 L1135 471 L1135 424 L1190 424" class="dataLine"/>
+  <rect x="1038" y="433" width="135" height="25" class="opBg"/>
+  <text x="1048" y="452" class="op">SELECT users</text>
+  <path d="M1015 495 L1715 495 L1715 430 L1850 430" class="dataLine"/>
+  <rect x="1335" y="458" width="165" height="25" class="opBg"/>
+  <text x="1345" y="477" class="op">GET / SET token</text>
   <path d="M2300 430 L2765 430" class="line"/>
 
   <rect x="50" y="625" width="3070" height="360" class="group"/>
@@ -126,7 +126,7 @@
 
   <rect x="80" y="1135" width="315" height="98" class="box api"/>
   <text x="105" y="1168" class="label">GET /house/{id}</text>
-  <text x="105" y="1198" class="small">client or moderator</text>
+  <text x="105" y="1198" class="small">registered user</text>
   <rect x="455" y="1135" width="560" height="98" class="box logic"/>
   <text x="480" y="1165" class="label">Check role and validate house id</text>
   <text x="480" y="1195" class="small">client sees only approved flats</text>
@@ -137,7 +137,7 @@
 
   <rect x="80" y="1375" width="315" height="98" class="box api"/>
   <text x="105" y="1408" class="label">POST /flat/create</text>
-  <text x="105" y="1438" class="small">client or moderator</text>
+  <text x="105" y="1438" class="small">registered user</text>
   <rect x="455" y="1375" width="560" height="98" class="box logic"/>
   <text x="480" y="1405" class="label">Validate flat fields</text>
   <text x="480" y="1435" class="small">creates flat in created status</text>
@@ -170,31 +170,35 @@
   <text x="1215" y="1440" class="label">flat_status enum</text>
   <text x="1215" y="1472" class="code">created | on moderation | approved | declined</text>
 
+  <rect x="1190" y="1545" width="520" height="70" class="box table"/>
+  <text x="1215" y="1574" class="label">houses.update_at</text>
+  <text x="1215" y="1602" class="tiny">updated when a new flat is created</text>
+
   <path d="M395 1184 L455 1184" class="line"/>
   <path d="M395 1424 L455 1424" class="line"/>
   <path d="M395 1664 L455 1664" class="line"/>
   <path d="M1015 1184 L1190 1184" class="dataLine"/>
-  <rect x="1040" y="1145" width="230" height="25" class="opBg"/>
-  <text x="1050" y="1164" class="op">SELECT flats by house_id</text>
+  <rect x="1018" y="1138" width="230" height="25" class="opBg"/>
+  <text x="1028" y="1157" class="op">SELECT flats by house_id</text>
   <path d="M1015 1424 L1190 1424" class="dataLine"/>
-  <rect x="1050" y="1385" width="130" height="25" class="opBg"/>
-  <text x="1060" y="1404" class="op">INSERT flats</text>
-  <path d="M1015 1455 L1095 1455 L1095 965 L1190 965 L1190 905" class="dataLine"/>
-  <rect x="815" y="1010" width="230" height="25" class="opBg"/>
-  <text x="825" y="1029" class="op">UPDATE houses.update_at</text>
-  <path d="M1015 1664 L1135 1664 L1135 1374 L1190 1374" class="dataLine"/>
-  <rect x="875" y="1560" width="145" height="25" class="opBg"/>
-  <text x="885" y="1579" class="op">UPDATE status</text>
+  <rect x="1035" y="1378" width="130" height="25" class="opBg"/>
+  <text x="1045" y="1397" class="op">INSERT flats</text>
+  <path d="M1015 1455 L1115 1455 L1115 1580 L1190 1580" class="dataLine"/>
+  <rect x="850" y="1502" width="230" height="25" class="opBg"/>
+  <text x="860" y="1521" class="op">UPDATE houses.update_at</text>
+  <path d="M1015 1664 L1760 1664 L1760 1495 L1710 1495" class="dataLine"/>
+  <rect x="1085" y="1624" width="145" height="25" class="opBg"/>
+  <text x="1095" y="1643" class="op">UPDATE status</text>
   <path d="M1710 1184 L2765 1184" class="line"/>
   <path d="M1710 1424 L2765 1424" class="line"/>
-  <path d="M1710 1374 L2305 1374 L2305 1664 L2765 1664" class="line"/>
+  <path d="M1710 1472 L2500 1472 L2500 1664 L2765 1664" class="line"/>
 
   <rect x="50" y="1880" width="3070" height="430" class="group"/>
   <text x="80" y="1922" class="groupTitle">Subscriptions</text>
 
   <rect x="80" y="2010" width="315" height="98" class="box api"/>
   <text x="105" y="2043" class="label">POST /house/{id}/subscribe</text>
-  <text x="105" y="2073" class="small">client or moderator</text>
+  <text x="105" y="2073" class="small">registered user</text>
   <rect x="455" y="2010" width="560" height="98" class="box logic"/>
   <text x="480" y="2040" class="label">Validate house id and email</text>
   <text x="480" y="2070" class="small">stores one subscription per house + email</text>
@@ -217,10 +221,13 @@
   <text x="1058" y="2039" class="op">INSERT subscription</text>
   <path d="M1750 2059 L2765 2059" class="line"/>
 
-  <path d="M1710 1256 L2480 1256 L2480 920 L1680 920" class="rel"/>
-  <rect x="2495" y="1070" width="205" height="24" class="opBg"/>
-  <text x="2505" y="1088" class="tiny">flats.house_id -> houses.id</text>
-  <path d="M1750 2058 L2520 2058 L2520 940 L1680 940" class="rel"/>
-  <rect x="2535" y="1730" width="260" height="24" class="opBg"/>
-  <text x="2545" y="1748" class="tiny">subscriptions.house_id -> houses.id</text>
+  <path d="M1510 945 L1510 1110" class="rel"/>
+  <rect x="1530" y="1005" width="205" height="24" class="opBg"/>
+  <text x="1540" y="1023" class="tiny">flats.house_id -> houses.id</text>
+  <rect x="1855" y="1905" width="190" height="64" class="box table"/>
+  <text x="1880" y="1933" class="label">houses.id</text>
+  <text x="1880" y="1959" class="tiny">FK reference</text>
+  <path d="M1750 1945 L1805 1945 L1805 1937 L1855 1937" class="rel"/>
+  <rect x="1780" y="1978" width="260" height="24" class="opBg"/>
+  <text x="1790" y="1996" class="tiny">subscriptions.house_id -> houses.id</text>
 </svg>

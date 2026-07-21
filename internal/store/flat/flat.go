@@ -31,10 +31,12 @@ type Store struct {
 	storage *pg.Storage
 }
 
+// New creates a flat store backed by PostgreSQL storage.
 func New(storage *pg.Storage) *Store {
 	return &Store{storage: storage}
 }
 
+// Add creates a flat in the created status and updates the house last-flat timestamp.
 func (s *Store) Add(ctx context.Context, number, houseID, price, rooms int) (*models.Flat, error) {
 	var err error
 
@@ -84,6 +86,7 @@ func (s *Store) Add(ctx context.Context, number, houseID, price, rooms int) (*mo
 	}, nil
 }
 
+// ListByHouseID returns flats for a house, optionally including all moderation statuses.
 func (s *Store) ListByHouseID(ctx context.Context, houseID int, includeAllStatuses bool) ([]models.Flat, error) {
 	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
 	defer cancel()
@@ -118,6 +121,7 @@ func (s *Store) ListByHouseID(ctx context.Context, houseID int, includeAllStatus
 	return flats, nil
 }
 
+// UpdateStatus changes a flat status only when the current status allows the requested transition.
 func (s *Store) UpdateStatus(ctx context.Context, flatID int, status models.Status) (*models.Flat, error) {
 	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
 	defer cancel()
@@ -149,6 +153,7 @@ func (s *Store) UpdateStatus(ctx context.Context, flatID int, status models.Stat
 	return nil, ErrFlatStatusConflict
 }
 
+// exists checks whether a flat with the given identifier is present in storage.
 func (s *Store) exists(ctx context.Context, flatID int) (bool, error) {
 	query := `SELECT EXISTS(SELECT 1 FROM flats WHERE id = $1)`
 
@@ -164,6 +169,7 @@ type flatScanner interface {
 	Scan(dest ...any) error
 }
 
+// scanFlat reads flat columns from a row-like scanner into a domain model.
 func scanFlat(scanner flatScanner) (*models.Flat, error) {
 	var flat models.Flat
 	var status string

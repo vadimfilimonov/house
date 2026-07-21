@@ -26,5 +26,6 @@ func (s *Subscription) Create(ctx context.Context, houseID int, email string) er
 		return fmt.Errorf("email cannot be empty")
 	}
 
+	// TODO: Add asynchronous email notifications for new flats in the subscribed house.
 	return s.store.Add(ctx, houseID, email)
 }
