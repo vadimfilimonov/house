@@ -10,17 +10,17 @@ import (
 	store "github.com/vadimfilimonov/house/internal/store/user"
 )
 
-type Login struct {
+type Handler struct {
 	userManager userManager
 }
 
-func New(userManager userManager) *Login {
-	return &Login{
+func New(userManager userManager) *Handler {
+	return &Handler{
 		userManager: userManager,
 	}
 }
 
-func (h *Login) Handle(c *fiber.Ctx) error {
+func (h *Handler) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	var requestBody Input

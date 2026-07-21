@@ -10,17 +10,17 @@ import (
 	flatStore "github.com/vadimfilimonov/house/internal/store/flat"
 )
 
-type FlatCreate struct {
+type Handler struct {
 	flatManager flatManager
 }
 
-func New(flatManager flatManager) *FlatCreate {
-	return &FlatCreate{
+func New(flatManager flatManager) *Handler {
+	return &Handler{
 		flatManager: flatManager,
 	}
 }
 
-func (f *FlatCreate) Handle(c *fiber.Ctx) error {
+func (h *Handler) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	_, err := api.JWTPayloadFromRequest(c)
@@ -45,7 +45,7 @@ func (f *FlatCreate) Handle(c *fiber.Ctx) error {
 		return err
 	}
 
-	flat, err := f.flatManager.Create(ctx, requestBody.Number, requestBody.HouseID, requestBody.Price, requestBody.Rooms)
+	flat, err := h.flatManager.Create(ctx, requestBody.Number, requestBody.HouseID, requestBody.Price, requestBody.Rooms)
 	if err != nil {
 		if errors.Is(err, flatStore.ErrFlatAlreadyExists) {
 			if sendErr := c.SendStatus(fiber.StatusConflict); sendErr != nil {

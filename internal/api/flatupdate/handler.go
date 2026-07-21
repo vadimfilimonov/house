@@ -12,15 +12,15 @@ import (
 	flatStore "github.com/vadimfilimonov/house/internal/store/flat"
 )
 
-type FlatUpdate struct {
+type Handler struct {
 	flatManager flatManager
 }
 
-func New(flatManager flatManager) *FlatUpdate {
-	return &FlatUpdate{flatManager: flatManager}
+func New(flatManager flatManager) *Handler {
+	return &Handler{flatManager: flatManager}
 }
 
-func (f *FlatUpdate) Handle(c *fiber.Ctx) error {
+func (h *Handler) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	jwtPayload, err := api.JWTPayloadFromRequest(c)
@@ -64,7 +64,7 @@ func (f *FlatUpdate) Handle(c *fiber.Ctx) error {
 		return err
 	}
 
-	flat, err := f.flatManager.UpdateStatus(ctx, requestBody.ID, models.Status(requestBody.Status))
+	flat, err := h.flatManager.UpdateStatus(ctx, requestBody.ID, models.Status(requestBody.Status))
 	if err != nil {
 		if errors.Is(err, flatStore.ErrFlatNotFound) {
 			if sendErr := c.SendStatus(fiber.StatusNotFound); sendErr != nil {

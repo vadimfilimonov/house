@@ -11,15 +11,15 @@ import (
 	"github.com/vadimfilimonov/house/internal/service/auth_token"
 )
 
-type HouseGet struct {
+type Handler struct {
 	flatManager flatManager
 }
 
-func New(flatManager flatManager) *HouseGet {
-	return &HouseGet{flatManager: flatManager}
+func New(flatManager flatManager) *Handler {
+	return &Handler{flatManager: flatManager}
 }
 
-func (h *HouseGet) Handle(c *fiber.Ctx) error {
+func (h *Handler) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	jwtPayload, err := api.JWTPayloadFromRequest(c)

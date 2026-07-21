@@ -10,17 +10,17 @@ import (
 	manager "github.com/vadimfilimonov/house/internal/service/user"
 )
 
-type Register struct {
+type Handler struct {
 	userManager userManager
 }
 
-func New(userManager userManager) *Register {
-	return &Register{
+func New(userManager userManager) *Handler {
+	return &Handler{
 		userManager: userManager,
 	}
 }
 
-func (h *Register) Handle(c *fiber.Ctx) error {
+func (h *Handler) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	var requestBody Input

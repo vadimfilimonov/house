@@ -10,17 +10,17 @@ import (
 	"github.com/vadimfilimonov/house/internal/service/auth_token"
 )
 
-type HouseCreate struct {
+type Handler struct {
 	houseManager houseManager
 }
 
-func New(houseManager houseManager) *HouseCreate {
-	return &HouseCreate{
+func New(houseManager houseManager) *Handler {
+	return &Handler{
 		houseManager: houseManager,
 	}
 }
 
-func (h *HouseCreate) Handle(c *fiber.Ctx) error {
+func (h *Handler) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	jwtPayload, err := api.JWTPayloadFromRequest(c)

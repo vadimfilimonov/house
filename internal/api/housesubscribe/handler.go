@@ -11,15 +11,15 @@ import (
 	subscriptionStore "github.com/vadimfilimonov/house/internal/store/subscription"
 )
 
-type HouseSubscribe struct {
+type Handler struct {
 	subscriptionManager subscriptionManager
 }
 
-func New(subscriptionManager subscriptionManager) *HouseSubscribe {
-	return &HouseSubscribe{subscriptionManager: subscriptionManager}
+func New(subscriptionManager subscriptionManager) *Handler {
+	return &Handler{subscriptionManager: subscriptionManager}
 }
 
-func (h *HouseSubscribe) Handle(c *fiber.Ctx) error {
+func (h *Handler) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	if _, err := api.JWTPayloadFromRequest(c); err != nil {
