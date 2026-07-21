@@ -2,6 +2,7 @@ package flat
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -10,22 +11,32 @@ import (
 
 	"github.com/vadimfilimonov/house/internal/models"
 	"github.com/vadimfilimonov/house/internal/storage/pg"
+	"github.com/vadimfilimonov/house/internal/store/pgerr"
 )
 
 var (
-	ErrFlatAlreadyExists = errors.New("flat already exists")
-	ErrHouseNotAdded     = errors.New(("house is not added"))
-	defaultTimeout       = 5 * time.Second
+	ErrFlatAlreadyExists  = errors.New("flat already exists")
+	ErrFlatNotFound       = errors.New("flat is not found")
+	ErrFlatStatusConflict = errors.New("flat status transition conflict")
+	defaultTimeout        = 5 * time.Second
 )
+
+var requiredStatusByNextStatus = map[models.Status]models.Status{
+	models.OnModerationStatus: models.CreatedStatus,
+	models.ApprovedStatus:     models.OnModerationStatus,
+	models.DeclinedStatus:     models.OnModerationStatus,
+}
 
 type Store struct {
 	storage *pg.Storage
 }
 
+// New creates a flat store backed by PostgreSQL storage.
 func New(storage *pg.Storage) *Store {
 	return &Store{storage: storage}
 }
 
+// Add creates a flat in the created status and updates the house last-flat timestamp.
 func (s *Store) Add(ctx context.Context, number, houseID, price, rooms int) (*models.Flat, error) {
 	var err error
 
@@ -49,7 +60,7 @@ func (s *Store) Add(ctx context.Context, number, houseID, price, rooms int) (*mo
 	var flatID int
 	if err = tx.QueryRowContext(ctx, flatsQuery, number, houseID, price, rooms, models.CreatedStatus).Scan(&flatID); err != nil {
 		var pqErr *pq.Error
-		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+		if errors.As(err, &pqErr) && pqErr.Code == pgerr.UniqueViolation {
 			return nil, ErrFlatAlreadyExists
 		}
 
@@ -73,4 +84,102 @@ func (s *Store) Add(ctx context.Context, number, houseID, price, rooms int) (*mo
 		Rooms:   rooms,
 		Status:  models.CreatedStatus,
 	}, nil
+}
+
+// ListByHouseID returns flats for a house, optionally including all moderation statuses.
+func (s *Store) ListByHouseID(ctx context.Context, houseID int, includeAllStatuses bool) ([]models.Flat, error) {
+	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
+	defer cancel()
+
+	query := `SELECT id, number, house_id, price, rooms, status FROM flats WHERE house_id = $1 ORDER BY id`
+	args := []any{houseID}
+	if !includeAllStatuses {
+		query = `SELECT id, number, house_id, price, rooms, status FROM flats WHERE house_id = $1 AND status = $2 ORDER BY id`
+		args = append(args, models.ApprovedStatus)
+	}
+
+	rows, err := s.storage.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("cannot list flats: %w", err)
+	}
+	defer rows.Close()
+
+	flats := make([]models.Flat, 0)
+	for rows.Next() {
+		flat, err := scanFlat(rows)
+		if err != nil {
+			return nil, err
+		}
+
+		flats = append(flats, *flat)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("cannot read flats rows: %w", err)
+	}
+
+	return flats, nil
+}
+
+// UpdateStatus changes a flat status only when the current status allows the requested transition.
+func (s *Store) UpdateStatus(ctx context.Context, flatID int, status models.Status) (*models.Flat, error) {
+	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
+	defer cancel()
+
+	requiredStatus, ok := requiredStatusByNextStatus[status]
+	if !ok {
+		return nil, ErrFlatStatusConflict
+	}
+
+	query := `UPDATE flats SET status = $2 WHERE id = $1 AND status = $3 RETURNING id, number, house_id, price, rooms, status`
+	flat, err := scanFlat(s.storage.QueryRowContext(ctx, query, flatID, status.String(), requiredStatus.String()))
+	if err == nil {
+		return flat, nil
+	}
+
+	if !errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("cannot update flat status: %w", err)
+	}
+
+	exists, err := s.exists(ctx, flatID)
+	if err != nil {
+		return nil, err
+	}
+
+	if !exists {
+		return nil, ErrFlatNotFound
+	}
+
+	return nil, ErrFlatStatusConflict
+}
+
+// exists checks whether a flat with the given identifier is present in storage.
+func (s *Store) exists(ctx context.Context, flatID int) (bool, error) {
+	query := `SELECT EXISTS(SELECT 1 FROM flats WHERE id = $1)`
+
+	var exists bool
+	if err := s.storage.QueryRowContext(ctx, query, flatID).Scan(&exists); err != nil {
+		return false, fmt.Errorf("cannot check flat existence: %w", err)
+	}
+
+	return exists, nil
+}
+
+type flatScanner interface {
+	Scan(dest ...any) error
+}
+
+// scanFlat reads flat columns from a row-like scanner into a domain model.
+func scanFlat(scanner flatScanner) (*models.Flat, error) {
+	var flat models.Flat
+	var status string
+	var houseID int
+	if err := scanner.Scan(&flat.ID, &flat.Number, &houseID, &flat.Price, &flat.Rooms, &status); err != nil {
+		return nil, err
+	}
+
+	flat.HouseID = models.HouseID(houseID)
+	flat.Status = models.Status(status)
+
+	return &flat, nil
 }

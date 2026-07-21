@@ -1,4 +1,4 @@
-package api
+package register
 
 import (
 	"errors"
@@ -10,46 +10,20 @@ import (
 	manager "github.com/vadimfilimonov/house/internal/service/user"
 )
 
-type RegisterInput struct {
-	Email    string `json:"email"`     // Email пользователя
-	Password string `json:"password"`  // Пароль пользователя
-	UserType string `json:"user_type"` // Тип пользователя: client или moderator
-}
-
-func (i RegisterInput) Validate() error {
-	if err := validateEmail(i.Email); err != nil {
-		return err
-	}
-
-	if err := validatePassword(i.Password); err != nil {
-		return err
-	}
-
-	if err := validateUserType(i.UserType); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-type RegisterOutput struct {
-	UserID string `json:"user_id"` // Идентификатор созданного пользователя
-}
-
-type Register struct {
+type Handler struct {
 	userManager userManager
 }
 
-func NewRegister(userManager userManager) *Register {
-	return &Register{
+func New(userManager userManager) *Handler {
+	return &Handler{
 		userManager: userManager,
 	}
 }
 
-func (h *Register) Handle(c *fiber.Ctx) error {
+func (h *Handler) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	var requestBody RegisterInput
+	var requestBody Input
 	if err := c.BodyParser(&requestBody); err != nil {
 		return fmt.Errorf("body parser: %w", err)
 	}
@@ -84,5 +58,5 @@ func (h *Register) Handle(c *fiber.Ctx) error {
 	}
 
 	c.Status(fiber.StatusOK)
-	return c.JSON(RegisterOutput{UserID: *userID})
+	return c.JSON(convToResponse(*userID))
 }

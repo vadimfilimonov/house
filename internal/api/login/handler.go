@@ -1,4 +1,4 @@
-package api
+package login
 
 import (
 	"errors"
@@ -10,41 +10,20 @@ import (
 	store "github.com/vadimfilimonov/house/internal/store/user"
 )
 
-type LoginInput struct {
-	Email    string `json:"email"`    // Email пользователя
-	Password string `json:"password"` // Пароль пользователя
-}
-
-func (i LoginInput) Validate() error {
-	if err := validateEmail(i.Email); err != nil {
-		return err
-	}
-
-	if err := validatePassword(i.Password); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-type LoginOutput struct {
-	Token string `json:"token"` // Авторизационный токен
-}
-
-type Login struct {
+type Handler struct {
 	userManager userManager
 }
 
-func NewLogin(userManager userManager) *Login {
-	return &Login{
+func New(userManager userManager) *Handler {
+	return &Handler{
 		userManager: userManager,
 	}
 }
 
-func (h *Login) Handle(c *fiber.Ctx) error {
+func (h *Handler) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	var requestBody LoginInput
+	var requestBody Input
 	if err := c.BodyParser(&requestBody); err != nil {
 		return fmt.Errorf("body parser: %w", err)
 	}
@@ -71,5 +50,5 @@ func (h *Login) Handle(c *fiber.Ctx) error {
 
 	c.Set("Content-Type", "application/json")
 
-	return c.JSON(LoginOutput{Token: *token})
+	return c.JSON(convToResponse(*token))
 }

@@ -1,8 +1,8 @@
-package api
+package login
 
 import "context"
 
 type userManager interface {
-	Register(ctx context.Context, email, password, userType string) (userID *string, err error)
+	// Login authenticates a user and returns an authorization token.
 	Login(ctx context.Context, id string, password string) (token *string, err error)
 }

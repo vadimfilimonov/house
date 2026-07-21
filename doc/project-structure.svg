@@ -1,0 +1,233 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3200" height="2500" viewBox="0 0 3200 2500">
+  <defs>
+    <marker id="arrow" markerWidth="14" markerHeight="14" refX="11" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 4 L 0 8 z" fill="#334155"/>
+    </marker>
+    <marker id="relArrow" markerWidth="14" markerHeight="14" refX="11" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 4 L 0 8 z" fill="#DC2626"/>
+    </marker>
+    <style>
+      text { font-family: Arial, Helvetica, sans-serif; fill: #111827; }
+      .title { font-size: 46px; font-weight: 700; }
+      .subtitle { font-size: 24px; fill: #475569; }
+      .section { font-size: 28px; font-weight: 700; }
+      .groupTitle { font-size: 24px; font-weight: 700; fill: #334155; }
+      .label { font-size: 20px; font-weight: 700; }
+      .small { font-size: 16px; fill: #334155; }
+      .tiny { font-size: 14px; fill: #475569; }
+      .code { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 15px; fill: #334155; }
+      .op { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 15px; font-weight: 700; fill: #334155; }
+      .opBg { fill: #F8FAFC; stroke: #CBD5E1; stroke-width: 1; rx: 5; }
+      .group { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 2; rx: 20; opacity: 0.78; }
+      .box { fill: #ffffff; stroke: #CBD5E1; stroke-width: 2; rx: 12; }
+      .api { fill: #EFF6FF; stroke: #60A5FA; }
+      .logic { fill: #F0FDF4; stroke: #4ADE80; }
+      .response { fill: #F8FAFC; stroke: #94A3B8; }
+      .table { fill: #FFFFFF; stroke: #FCA5A5; }
+      .tableHeader { fill: #FEF2F2; stroke: #FCA5A5; }
+      .redis { fill: #FDF2F8; stroke: #F9A8D4; }
+      .line { stroke: #334155; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+      .dataLine { stroke: #475569; stroke-width: 2.4; fill: none; marker-end: url(#arrow); }
+      .rel { stroke: #DC2626; stroke-width: 2; stroke-dasharray: 8 9; fill: none; marker-end: url(#relArrow); opacity: 0.42; }
+      .softRel { stroke: #DC2626; stroke-width: 2; stroke-dasharray: 7 8; fill: none; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="3200" height="2500" fill="#F8FAFC"/>
+  <text x="70" y="76" class="title">House Service Request Map</text>
+  <text x="70" y="114" class="subtitle">Endpoints are grouped by feature area; each path shows the handler logic, storage operation, table or Redis key, and response.</text>
+
+  <text x="90" y="178" class="section">HTTP API</text>
+  <text x="455" y="178" class="section">Application Logic</text>
+  <text x="1160" y="178" class="section">PostgreSQL and Redis</text>
+  <text x="2790" y="178" class="section">Response</text>
+
+  <rect x="50" y="210" width="3070" height="360" class="group"/>
+  <text x="80" y="252" class="groupTitle">Auth</text>
+
+  <rect x="80" y="285" width="315" height="82" class="box api"/>
+  <text x="105" y="318" class="label">POST /register</text>
+  <text x="105" y="348" class="small">public</text>
+  <rect x="455" y="285" width="560" height="82" class="box logic"/>
+  <text x="480" y="315" class="label">Validate input and hash password</text>
+  <text x="480" y="345" class="small">email, password, user_type</text>
+  <rect x="2765" y="285" width="330" height="82" class="box response"/>
+  <text x="2790" y="318" class="label">200 user_id</text>
+  <text x="2790" y="348" class="small">or 400 / 500</text>
+
+  <rect x="80" y="430" width="315" height="82" class="box api"/>
+  <text x="105" y="463" class="label">POST /login</text>
+  <text x="105" y="493" class="small">public</text>
+  <rect x="455" y="430" width="560" height="82" class="box logic"/>
+  <text x="480" y="460" class="label">Find user and verify password</text>
+  <text x="480" y="490" class="small">returns cached token or creates a new one</text>
+  <rect x="2765" y="430" width="330" height="82" class="box response"/>
+  <text x="2790" y="463" class="label">200 JWT token</text>
+  <text x="2790" y="493" class="small">or 400 / 404 / 500</text>
+
+  <rect x="1190" y="265" width="470" height="220" class="box table"/>
+  <rect x="1190" y="265" width="470" height="50" class="tableHeader"/>
+  <text x="1215" y="298" class="label">users</text>
+  <text x="1215" y="345" class="code">id</text><text x="1375" y="345" class="tiny">UUID PK</text>
+  <text x="1215" y="378" class="code">email</text><text x="1375" y="378" class="tiny">VARCHAR(255) UNIQUE NOT NULL</text>
+  <text x="1215" y="411" class="code">password</text><text x="1375" y="411" class="tiny">VARCHAR(255) NOT NULL</text>
+  <text x="1215" y="444" class="code">user_type</text><text x="1375" y="444" class="tiny">client | moderator</text>
+
+  <rect x="1850" y="360" width="450" height="140" class="box redis"/>
+  <text x="1875" y="398" class="label">Redis</text>
+  <text x="1875" y="438" class="code">token:{user_id}</text>
+  <text x="1875" y="471" class="tiny">JWT token, TTL 24h</text>
+
+  <path d="M395 326 L455 326" class="line"/>
+  <path d="M395 471 L455 471" class="line"/>
+  <path d="M1015 326 L1190 326" class="dataLine"/>
+  <rect x="1055" y="287" width="135" height="25" class="opBg"/>
+  <text x="1065" y="306" class="op">INSERT users</text>
+  <path d="M1660 326 L2765 326" class="line"/>
+  <path d="M1015 471 L1135 471 L1135 424 L1190 424" class="dataLine"/>
+  <rect x="1038" y="433" width="135" height="25" class="opBg"/>
+  <text x="1048" y="452" class="op">SELECT users</text>
+  <path d="M1015 495 L1715 495 L1715 430 L1850 430" class="dataLine"/>
+  <rect x="1335" y="458" width="165" height="25" class="opBg"/>
+  <text x="1345" y="477" class="op">GET / SET token</text>
+  <path d="M2300 430 L2765 430" class="line"/>
+
+  <rect x="50" y="625" width="3070" height="360" class="group"/>
+  <text x="80" y="667" class="groupTitle">Houses</text>
+
+  <rect x="80" y="725" width="315" height="92" class="box api"/>
+  <text x="105" y="758" class="label">POST /house/create</text>
+  <text x="105" y="788" class="small">moderator only</text>
+  <rect x="455" y="725" width="560" height="92" class="box logic"/>
+  <text x="480" y="755" class="label">Check role and validate house fields</text>
+  <text x="480" y="785" class="small">address, year, developer</text>
+  <rect x="2765" y="725" width="330" height="92" class="box response"/>
+  <text x="2790" y="758" class="label">200 House JSON</text>
+  <text x="2790" y="788" class="small">or 400 / 401 / 403 / 500</text>
+
+  <rect x="1190" y="660" width="490" height="285" class="box table"/>
+  <rect x="1190" y="660" width="490" height="50" class="tableHeader"/>
+  <text x="1215" y="693" class="label">houses</text>
+  <text x="1215" y="740" class="code">id</text><text x="1390" y="740" class="tiny">BIGINT PK IDENTITY</text>
+  <text x="1215" y="773" class="code">address</text><text x="1390" y="773" class="tiny">VARCHAR(255) NOT NULL</text>
+  <text x="1215" y="806" class="code">year</text><text x="1390" y="806" class="tiny">INT NOT NULL</text>
+  <text x="1215" y="839" class="code">developer</text><text x="1390" y="839" class="tiny">VARCHAR(255) nullable</text>
+  <text x="1215" y="872" class="code">created_at</text><text x="1390" y="872" class="tiny">TIMESTAMP</text>
+  <text x="1215" y="905" class="code">update_at</text><text x="1390" y="905" class="tiny">TIMESTAMP</text>
+
+  <path d="M395 771 L455 771" class="line"/>
+  <path d="M1015 771 L1190 771" class="dataLine"/>
+  <rect x="1050" y="732" width="150" height="25" class="opBg"/>
+  <text x="1060" y="751" class="op">INSERT houses</text>
+  <path d="M1680 771 L2765 771" class="line"/>
+
+  <rect x="50" y="1040" width="3070" height="780" class="group"/>
+  <text x="80" y="1082" class="groupTitle">Flats</text>
+
+  <rect x="80" y="1135" width="315" height="98" class="box api"/>
+  <text x="105" y="1168" class="label">GET /house/{id}</text>
+  <text x="105" y="1198" class="small">registered user</text>
+  <rect x="455" y="1135" width="560" height="98" class="box logic"/>
+  <text x="480" y="1165" class="label">Check role and validate house id</text>
+  <text x="480" y="1195" class="small">client sees only approved flats</text>
+  <text x="480" y="1220" class="tiny">moderator sees all statuses</text>
+  <rect x="2765" y="1135" width="330" height="98" class="box response"/>
+  <text x="2790" y="1168" class="label">200 flats[]</text>
+  <text x="2790" y="1198" class="small">or 400 / 401 / 403 / 500</text>
+
+  <rect x="80" y="1375" width="315" height="98" class="box api"/>
+  <text x="105" y="1408" class="label">POST /flat/create</text>
+  <text x="105" y="1438" class="small">registered user</text>
+  <rect x="455" y="1375" width="560" height="98" class="box logic"/>
+  <text x="480" y="1405" class="label">Validate flat fields</text>
+  <text x="480" y="1435" class="small">creates flat in created status</text>
+  <text x="480" y="1460" class="tiny">also updates the house last-flat date</text>
+  <rect x="2765" y="1375" width="330" height="98" class="box response"/>
+  <text x="2790" y="1408" class="label">200 Flat JSON</text>
+  <text x="2790" y="1438" class="small">or 400 / 401 / 409 / 500</text>
+
+  <rect x="80" y="1615" width="315" height="98" class="box api"/>
+  <text x="105" y="1648" class="label">POST /flat/update</text>
+  <text x="105" y="1678" class="small">moderator only</text>
+  <rect x="455" y="1615" width="560" height="98" class="box logic"/>
+  <text x="480" y="1645" class="label">Check moderation transition</text>
+  <text x="480" y="1675" class="small">created -> on moderation -> approved/declined</text>
+  <text x="480" y="1700" class="tiny">atomic update prevents double moderation</text>
+  <rect x="2765" y="1615" width="330" height="98" class="box response"/>
+  <text x="2790" y="1648" class="label">200 Flat JSON</text>
+  <text x="2790" y="1678" class="small">or 400 / 401 / 403 / 404 / 409 / 500</text>
+
+  <rect x="1190" y="1110" width="520" height="385" class="box table"/>
+  <rect x="1190" y="1110" width="520" height="50" class="tableHeader"/>
+  <text x="1215" y="1143" class="label">flats</text>
+  <text x="1215" y="1190" class="code">id</text><text x="1390" y="1190" class="tiny">BIGINT PK IDENTITY</text>
+  <text x="1215" y="1223" class="code">number</text><text x="1390" y="1223" class="tiny">INT NOT NULL</text>
+  <text x="1215" y="1256" class="code">house_id</text><text x="1390" y="1256" class="tiny">BIGINT FK -> houses.id</text>
+  <text x="1215" y="1289" class="code">price</text><text x="1390" y="1289" class="tiny">INT NOT NULL</text>
+  <text x="1215" y="1322" class="code">rooms</text><text x="1390" y="1322" class="tiny">INT NOT NULL</text>
+  <text x="1215" y="1355" class="code">status</text><text x="1390" y="1355" class="tiny">flat_status NOT NULL</text>
+  <text x="1215" y="1388" class="tiny">UNIQUE(number, house_id)</text>
+  <text x="1215" y="1440" class="label">flat_status enum</text>
+  <text x="1215" y="1472" class="code">created | on moderation | approved | declined</text>
+
+  <rect x="1190" y="1545" width="520" height="70" class="box table"/>
+  <text x="1215" y="1574" class="label">houses.update_at</text>
+  <text x="1215" y="1602" class="tiny">updated when a new flat is created</text>
+
+  <path d="M395 1184 L455 1184" class="line"/>
+  <path d="M395 1424 L455 1424" class="line"/>
+  <path d="M395 1664 L455 1664" class="line"/>
+  <path d="M1015 1184 L1190 1184" class="dataLine"/>
+  <rect x="1018" y="1138" width="230" height="25" class="opBg"/>
+  <text x="1028" y="1157" class="op">SELECT flats by house_id</text>
+  <path d="M1015 1424 L1190 1424" class="dataLine"/>
+  <rect x="1035" y="1378" width="130" height="25" class="opBg"/>
+  <text x="1045" y="1397" class="op">INSERT flats</text>
+  <path d="M1015 1455 L1115 1455 L1115 1580 L1190 1580" class="dataLine"/>
+  <rect x="850" y="1502" width="230" height="25" class="opBg"/>
+  <text x="860" y="1521" class="op">UPDATE houses.update_at</text>
+  <path d="M1015 1664 L1760 1664 L1760 1495 L1710 1495" class="dataLine"/>
+  <rect x="1085" y="1624" width="145" height="25" class="opBg"/>
+  <text x="1095" y="1643" class="op">UPDATE status</text>
+  <path d="M1710 1184 L2765 1184" class="line"/>
+  <path d="M1710 1424 L2765 1424" class="line"/>
+  <path d="M1710 1472 L2500 1472 L2500 1664 L2765 1664" class="line"/>
+
+  <rect x="50" y="1880" width="3070" height="430" class="group"/>
+  <text x="80" y="1922" class="groupTitle">Subscriptions</text>
+
+  <rect x="80" y="2010" width="315" height="98" class="box api"/>
+  <text x="105" y="2043" class="label">POST /house/{id}/subscribe</text>
+  <text x="105" y="2073" class="small">registered user</text>
+  <rect x="455" y="2010" width="560" height="98" class="box logic"/>
+  <text x="480" y="2040" class="label">Validate house id and email</text>
+  <text x="480" y="2070" class="small">stores one subscription per house + email</text>
+  <rect x="2765" y="2010" width="330" height="98" class="box response"/>
+  <text x="2790" y="2043" class="label">200 OK</text>
+  <text x="2790" y="2073" class="small">or 400 / 401 / 404 / 409 / 500</text>
+
+  <rect x="1190" y="1945" width="560" height="255" class="box table"/>
+  <rect x="1190" y="1945" width="560" height="50" class="tableHeader"/>
+  <text x="1215" y="1978" class="label">house_subscriptions</text>
+  <text x="1215" y="2025" class="code">id</text><text x="1390" y="2025" class="tiny">BIGINT PK IDENTITY</text>
+  <text x="1215" y="2058" class="code">house_id</text><text x="1390" y="2058" class="tiny">BIGINT FK -> houses.id</text>
+  <text x="1215" y="2091" class="code">email</text><text x="1390" y="2091" class="tiny">VARCHAR(255) NOT NULL</text>
+  <text x="1215" y="2124" class="code">created_at</text><text x="1390" y="2124" class="tiny">TIMESTAMP DEFAULT NOW()</text>
+  <text x="1215" y="2157" class="tiny">UNIQUE(house_id, email)</text>
+
+  <path d="M395 2059 L455 2059" class="line"/>
+  <path d="M1015 2059 L1190 2059" class="dataLine"/>
+  <rect x="1048" y="2020" width="165" height="25" class="opBg"/>
+  <text x="1058" y="2039" class="op">INSERT subscription</text>
+  <path d="M1750 2059 L2765 2059" class="line"/>
+
+  <path d="M1510 945 L1510 1110" class="rel"/>
+  <rect x="1530" y="1005" width="205" height="24" class="opBg"/>
+  <text x="1540" y="1023" class="tiny">flats.house_id -> houses.id</text>
+  <rect x="1855" y="1905" width="190" height="64" class="box table"/>
+  <text x="1880" y="1933" class="label">houses.id</text>
+  <text x="1880" y="1959" class="tiny">FK reference</text>
+  <path d="M1750 1945 L1805 1945 L1805 1937 L1855 1937" class="rel"/>
+  <rect x="1780" y="1978" width="260" height="24" class="opBg"/>
+  <text x="1790" y="1996" class="tiny">subscriptions.house_id -> houses.id</text>
+</svg>

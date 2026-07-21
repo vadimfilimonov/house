@@ -57,6 +57,10 @@ func (s *Storage) QueryRowContext(ctx context.Context, query string, args ...any
 	return s.db.QueryRowContext(ctx, query, args...)
 }
 
+func (s *Storage) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
+	return s.db.QueryContext(ctx, query, args...)
+}
+
 func (s *Storage) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
 	return s.db.ExecContext(ctx, query, args...)
 }
