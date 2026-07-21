@@ -3,6 +3,7 @@ package pg
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"sync"
@@ -85,8 +86,8 @@ func runMigrations(db *sql.DB) error {
 		return err
 	}
 
-	if err := m.Up(); err != nil {
-		log.Println(err)
+	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return fmt.Errorf("cannot apply migrations: %w", err)
 	}
 
 	return nil
