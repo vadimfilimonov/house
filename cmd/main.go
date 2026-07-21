@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/vadimfilimonov/house/internal/api"
+	authmiddleware "github.com/vadimfilimonov/house/internal/api/auth"
 	"github.com/vadimfilimonov/house/internal/api/flatcreate"
 	"github.com/vadimfilimonov/house/internal/api/flatupdate"
 	"github.com/vadimfilimonov/house/internal/api/housecreate"
@@ -82,11 +83,16 @@ func main() {
 		},
 		ContextKey: api.ContextKeyUser,
 	}))
-	authorizedGroup.Post("/house/create", housecreate.New(houseManager).Handle)
+	authorizedGroup.Use(authmiddleware.Middleware)
+
+	moderatorGroup := authorizedGroup.Group("")
+	moderatorGroup.Use(authmiddleware.RequireModerator)
+	moderatorGroup.Post("/house/create", housecreate.New(houseManager).Handle)
+	moderatorGroup.Post("/flat/update", flatupdate.New(flatManager).Handle)
+
 	authorizedGroup.Get("/house/:id", houseget.New(flatManager).Handle)
 	authorizedGroup.Post("/house/:id/subscribe", housesubscribe.New(subscriptionManager).Handle)
 	authorizedGroup.Post("/flat/create", flatcreate.New(flatManager).Handle)
-	authorizedGroup.Post("/flat/update", flatupdate.New(flatManager).Handle)
 
 	if err := app.Listen(c.ServerAddress); err != nil {
 		log.Fatal(err)

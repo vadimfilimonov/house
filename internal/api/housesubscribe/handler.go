@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/vadimfilimonov/house/internal/api"
 	subscriptionStore "github.com/vadimfilimonov/house/internal/store/subscription"
 )
 
@@ -20,10 +19,6 @@ func New(subscriptionManager subscriptionManager) *Handler {
 
 func (h *Handler) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
-
-	if _, err := api.JWTPayloadFromRequest(c); err != nil {
-		return c.Status(fiber.StatusUnauthorized).SendString(err.Error())
-	}
 
 	houseID, err := strconv.Atoi(c.Params("id"))
 	if err != nil {

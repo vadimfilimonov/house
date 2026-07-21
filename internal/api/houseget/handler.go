@@ -5,9 +5,8 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/vadimfilimonov/house/internal/api"
+	authmiddleware "github.com/vadimfilimonov/house/internal/api/auth"
 	"github.com/vadimfilimonov/house/internal/models"
-	"github.com/vadimfilimonov/house/internal/service/auth_token"
 )
 
 type Handler struct {
@@ -21,20 +20,9 @@ func New(flatManager flatManager) *Handler {
 func (h *Handler) Handle(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	jwtPayload, err := api.JWTPayloadFromRequest(c)
+	authContext, err := authmiddleware.FromContext(c)
 	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).SendString(err.Error())
-	}
-
-	userType, ok := jwtPayload[auth_token.ClaimsKeyUserType].(string)
-	if !ok {
-		err := fmt.Errorf("cannot get user type")
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
-	}
-
-	if userType != models.UserTypeClient && userType != models.UserTypeModerator {
-		err := fmt.Errorf("user type %q cannot get house flats", userType)
-		return c.Status(fiber.StatusForbidden).SendString(err.Error())
 	}
 
 	id, err := strconv.Atoi(c.Params("id"))
@@ -47,7 +35,7 @@ func (h *Handler) Handle(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	includeAllStatuses := userType == models.UserTypeModerator
+	includeAllStatuses := authContext.UserType == models.UserTypeModerator
 	flats, err := h.flatManager.ListByHouseID(ctx, request.ID, includeAllStatuses)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
