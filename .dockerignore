@@ -1,0 +1,9 @@
+.git
+.idea
+.gocache
+.gomodcache
+tmp
+.env
+.env.prod
+*.rdb
+houseBuild
