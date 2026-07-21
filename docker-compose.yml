@@ -1,62 +1,61 @@
+# Development environment: Go service with hot reload, local PostgreSQL and Redis.
 services:
-  # Приложение на Go
   app:
-    # Собираем образ из Dockerfile.dev
     build:
       context: .
       dockerfile: Dockerfile.dev
-    # Монтируем текущую директорию внутрь контейнера
     volumes:
       - .:/app
-    # Пробрасываем порт API наружу
+      - go_mod_cache:/go-mod-cache
+      - go_build_cache:/go-cache
     ports:
       - "8080:8080"
-    # Переменные окружения для подключения к БД и Redis
-    env_file:
-      - path: .env.example
-      - path: .env
-        required: false
-    # Сначала должны запуститься db и redis
+    environment:
+      SERVER_ADDRESS: 0.0.0.0:8080
+      DB_HOST: db
+      DB_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-house}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-very-secret-key}
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
-  # База данных PostgreSQL
   db:
-    # Официальный образ Postgres версии 15
     image: postgres:15
-    # Если контейнер упадёт, он перезапустится
-    restart: always
-    # Настройки базы (логин, пароль, имя базы)
-    env_file:
-      - path: .env.example
-      - path: .env
-        required: false
-    # Пробрасываем порт БД наружу
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-house}
     ports:
       - "5432:5432"
-    # Данные БД сохраняем в отдельный том (не пропадут при перезапуске)
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
-  # Redis
   redis:
-    # Официальный образ Redis версии 7
     image: redis:7
-    # Перезапуск при сбое
-    restart: always
-    # Проброс порта наружу
+    restart: unless-stopped
     ports:
       - "6379:6379"
-    env_file:
-      - path: .env.example
-      - path: .env
-        required: false
-    # (опционально) примонтировать том для сохранения дампов
-    # volumes:
-    #   - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
-# Определяем тома для хранения данных
 volumes:
   db_data:
-  # redis_data:
+  go_mod_cache:
+  go_build_cache:
